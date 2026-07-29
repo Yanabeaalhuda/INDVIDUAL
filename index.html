@@ -136,6 +136,74 @@ input,select,textarea,button{font-family:'ExpoArabic','HelveticaBold',Arial,sans
   .preview-offer{break-inside:avoid}
   .quote-footer{position:fixed;bottom:0}
 }
+
+/* Auth Modal Styling */
+body.auth-locked {
+  overflow: hidden!important;
+}
+body.auth-locked .appbar,
+body.auth-locked .shell,
+body.auth-locked .mobile-tabs {
+  display: none!important;
+}
+
+.auth-gate {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: linear-gradient(135deg, #3c0012, #6b0d24);
+}
+
+.auth-card {
+  width: min(420px, 100%);
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 32px 24px;
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.45);
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.auth-card h2 {
+  margin: 0 0 8px;
+  color: #6b0d24;
+  font-size: 22px;
+}
+
+.auth-card p {
+  margin: 0 0 20px;
+  color: #7c636b;
+  font-size: 14px;
+}
+
+.auth-card input {
+  width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+  direction: ltr;
+  font-size: 18px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  border: 1px solid #d9c8ce;
+  border-radius: 12px;
+}
+
+.auth-error {
+  min-height: 22px;
+  color: #c92a2a;
+  font-weight: 700;
+  font-size: 13px;
+  margin-top: 10px;
+}
 </style>
 </head>
 <body class="auth-locked">
