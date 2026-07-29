@@ -6,9 +6,11 @@ const MAX_OFFERS=8;
 const AUTH_HASH='db031c72ba245b0d6de8febc3797849ada2e764fbd783251f21cd823da263883';
 
 const uid=()=>Math.random().toString(36).slice(2,11)+Date.now().toString(36).slice(-4);
-const today=()=>new Date().toISOString().slice(0,10);
-const tomorrow=()=>{const d=new Date();d.setDate(d.getDate()+1);return d.toISOString().slice(0,10)};
+const localISODate=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const today=()=>localISODate(new Date());
+const tomorrow=()=>{const d=new Date();d.setDate(d.getDate()+1);return localISODate(d)};
 const clone=v=>JSON.parse(JSON.stringify(v));
+const safeId=v=>/^[A-Za-z0-9_-]{1,64}$/.test(String(v||''))?String(v):uid();
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const num=v=>{
   const n=Number(String(v??'').replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[٬,\s]/g,'').replace('٫','.'));
@@ -37,12 +39,23 @@ function normalize(){
   app=app&&typeof app==='object'?app:d;
   app.draft=Object.assign(d.draft,app.draft||{});
   app.library=Array.isArray(app.library)?app.library.slice(0,250):[];
+  const libraryIds=new Set();
+  app.library=app.library.filter(x=>x&&typeof x==='object'&&x.data&&typeof x.data==='object').map(x=>{
+    let id=safeId(x.id);
+    while(libraryIds.has(id))id=uid();
+    libraryIds.add(id);
+    return {...x,id,title:String(x.title||'عرض محفوظ')};
+  });
   app.settings=Object.assign(d.settings,app.settings||{});app.settings.logo=ORIGINAL_LOGO;
   if(!app.settings.companyLine||app.settings.companyLine==='خدمات الفنادق والحجوزات')app.settings.companyLine='سكن مطمئن لرحلة مباركة';
   app.settings.phones=normalizePhones(app.settings.phones||PHONE_DEFAULT.join('، '));
   app.draft.items=Array.isArray(app.draft.items)&&app.draft.items.length?app.draft.items.slice(0,MAX_OFFERS):[defaultOffer()];
+  const offerIds=new Set();
   app.draft.items=app.draft.items.map(x=>{
     const o=Object.assign(defaultOffer(),x||{}),known=findHotel(o.hotelName,o.hotelId);
+    o.id=safeId(o.id);
+    while(offerIds.has(o.id))o.id=uid();
+    offerIds.add(o.id);
     if(!['list','custom'].includes(o.hotelMode))o.hotelMode=known?'list':(o.hotelName?'custom':'list');
     if(o.hotelMode==='list'&&known){o.hotelId=known.id;o.hotelName=known.name}
     return o;
@@ -479,6 +492,7 @@ function quoteText(){
   q.items.forEach((o,i)=>{
     const s=stats(o);
     if(q.items.length > 1) lines.push(`الخيار ${i+1}:`);
+    lines.push(
       `الفندق: ${o.hotelName||'—'}`,
       `الدخول: ${dateLabel(o.checkIn)}`,
       `الخروج: ${dateLabel(o.checkOut)}`,
@@ -530,11 +544,12 @@ function exportBackup(){
 }
 
 function importBackup(file){
+  if(!file||file.size>5*1024*1024){alert('حجم ملف النسخة الاحتياطية غير مسموح');return}
   const r=new FileReader();
   r.onload=()=>{
     try{
-      const data=JSON.parse(r.result);
-      if(!data.draft||!Array.isArray(data.library))throw Error();
+      const data=JSON.parse(String(r.result||''));
+      if(!data||typeof data!=='object'||!data.draft||typeof data.draft!=='object'||!Array.isArray(data.library))throw Error();
       app=data;
       normalize();
       persist();
@@ -542,6 +557,7 @@ function importBackup(file){
       toast('تم استيراد النسخة الاحتياطية');
     }catch(e){alert('ملف النسخة الاحتياطية غير صالح')}
   };
+  r.onerror=()=>alert('تعذر قراءة ملف النسخة الاحتياطية');
   r.readAsText(file);
 }
 
@@ -792,7 +808,7 @@ function setupAuth(){
     const val = String(input.value || '').trim();
     try{
       const hash = await sha256(val);
-      if(hash === AUTH_HASH || val === 'Yanabea@2026'){
+      if(hash === AUTH_HASH){
         sessionStorage.setItem('yanabea_auth_ok','1');
         unlockApp();
       }else{
@@ -801,12 +817,7 @@ function setupAuth(){
         input.focus();
       }
     }catch(err){
-      if(val === 'Yanabea@2026'){
-        sessionStorage.setItem('yanabea_auth_ok','1');
-        unlockApp();
-      }else{
-        if(error)error.textContent='تعذر التحقق من كلمة المرور في هذا المتصفح';
-      }
+      if(error)error.textContent='تعذر التحقق من كلمة المرور في هذا المتصفح';
     }
   });
 }
