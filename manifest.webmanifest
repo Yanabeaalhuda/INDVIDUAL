@@ -1,0 +1,26 @@
+{
+  "name": "ينابيع الهدى | عرض سعر للأفراد",
+  "short_name": "عرض سعر",
+  "description": "برنامج إعداد وحفظ عروض أسعار حجوزات الفنادق للأفراد",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f5f1ee",
+  "theme_color": "#6f0d25",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
