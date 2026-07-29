@@ -172,7 +172,7 @@ function offerHtml(o,i){
   const s=stats(o);
   return`<article class="offer-card" data-id="${o.id}">
     <div class="offer-title">
-      <strong>الخيار ${i+1}</strong>
+      <strong>${app.draft.items.length > 1 ? `الخيار ${i+1}` : `تفاصيل الحجز`}</strong>
       <button class="btn danger small" data-remove="${o.id}">حذف</button>
     </div>
     <div class="grid three">
@@ -202,7 +202,7 @@ function offerHtml(o,i){
       <div class="pricing-fields">${pricingHtml(o)}</div>
     </div>
     <div class="summary"><span>${nightsText(s.nights)}</span><span>WEEKDAY: ${s.weekday}</span><span>WEEKEND: ${s.weekend}</span></div>
-    <div class="option-total"><span>إجمالي هذا الخيار</span><b>${money(s.total)} ${esc(app.draft.currency)}</b></div>
+    <div class="option-total"><span>${app.draft.items.length > 1 ? `إجمالي هذا الخيار` : `الإجمالي الكلي`}</span><b>${money(s.total)} ${esc(app.draft.currency)}</b></div>
   </article>`;
 }
 
@@ -326,7 +326,7 @@ function renderPreview(){
       const extraBedStr = num(o.extraBed) > 0 ? `<br><small>السرير الإضافي: ${money(o.extraBed)} ${esc(q.currency)}</small>` : '';
       const notesStr = o.notes ? `<br><small>${esc(o.notes)}</small>` : '';
       return`<section class="preview-offer">
-        <div class="preview-offer-head"><span>الخيار ${globalIndex+1}</span><span>${nightsText(st.nights)}</span></div>
+        <div class="preview-offer-head"><span>${q.items.length > 1 ? `الخيار ${globalIndex+1}` : `تفاصيل الإقامة`}</span><span>${nightsText(st.nights)}</span></div>
         <div class="preview-offer-body">
           <div class="hotel-name">${esc(o.hotelName||'اسم الفندق')}</div>
           <div class="detail-grid">
@@ -345,7 +345,7 @@ function renderPreview(){
       </section>`;
     }).join('');
 
-    const finalBlock=pageIndex===totalPages-1?`<div class="grand-total"><span>الإجمالي النهائي لجميع الخيارات</span><b>${money(grandTotal())} ${esc(q.currency)}</b></div><div class="closing"><b>${esc(q.notes)}</b><br>${esc(q.closing)}</div>`:'';
+    const finalBlock=pageIndex===totalPages-1?`<div class="grand-total"><span>${q.items.length > 1 ? `الإجمالي النهائي لجميع الخيارات` : `الإجمالي النهائي`}</span><b>${money(grandTotal())} ${esc(q.currency)}</b></div><div class="closing"><b>${esc(q.notes)}</b><br>${esc(q.closing)}</div>`:'';
     return`<div class="quote-page-wrapper">
     <article class="quote-page">
       <header class="quote-header">
@@ -478,7 +478,7 @@ function quoteText(){
   const q=app.draft,lines=[`عزيزي العميل / ${q.customerName||'................'}`,q.intro,''];
   q.items.forEach((o,i)=>{
     const s=stats(o);
-    lines.push(`الخيار ${i+1}:`,
+    if(q.items.length > 1) lines.push(`الخيار ${i+1}:`);
       `الفندق: ${o.hotelName||'—'}`,
       `الدخول: ${dateLabel(o.checkIn)}`,
       `الخروج: ${dateLabel(o.checkOut)}`,

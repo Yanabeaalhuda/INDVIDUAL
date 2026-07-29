@@ -114,7 +114,7 @@ input,select,textarea,button{font-family:'ExpoArabic','HelveticaBold',Arial,sans
   .section-head{align-items:stretch;flex-direction:column;gap:8px}
   .section-head .btn{width:100%}
   .preview-stage{padding:10px 4px}
-  .mobile-tabs{position:fixed;z-index:100;bottom:0;left:0;right:0;height:60px;background:#fff;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);box-shadow:0 -5px 22px rgba(70,12,30,.12)}
+  .mobile-tabs{position:fixed;z-index:100;bottom:0;left:0;right:0;height:60px;background:#fff;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(3,1fr);box-shadow:0 -5px 22px rgba(70,12,30,.12)}
   .mobile-tabs button{border:0;background:#fff;color:#71545d;font-size:11px;font-weight:700}
   .mobile-tabs button.active{color:var(--burg);background:#fff6f7}
   .column.mobile-hidden{display:none!important}
@@ -306,11 +306,11 @@ body.auth-locked .mobile-tabs {
   <div class="panel"><div class="section-head"><div><h3>خيارات الإقامة</h3></div><button class="btn primary" id="addOffer">+ إضافة خيار</button></div><div id="offers"></div></div>
   <div class="panel"><h3>الرسالة والملاحظات</h3><div class="grid two" style="margin-top:12px"><div class="field"><label>ملاحظة الأسعار</label><textarea id="notes"></textarea></div><div class="field"><label>رسالة الختام</label><textarea id="closing"></textarea></div></div><div class="actions" style="margin-top:13px"><button class="btn primary" id="copyText">نسخ رسالة واتساب</button><button class="btn gold" id="saveQuote">حفظ العرض</button><button class="btn outline" id="newQuote">عرض جديد</button></div></div>
   <div class="panel" id="savedPanel"><div class="section-head"><div><h3>العروض المحفوظة</h3></div><div class="actions"><button class="btn outline small" id="exportBackup">حفظ نسخة احتياطية</button><label class="btn light small" for="importBackup">رفع نسخة احتياطية</label><input id="importBackup" type="file" accept="application/json" hidden></div></div><div id="savedList"></div></div>
-  <div class="panel" id="settingsPanel"><div class="section-head"><div><h3>إعدادات الشركة</h3></div></div><div class="grid two"><div class="field"><label>اسم الشركة</label><input id="companyName"></div><div class="field"><label>وصف الخدمة</label><input id="companyLine"></div><div class="field" style="grid-column:1/-1"><label>أرقام التواصل (افصل بينها بفاصلة)</label><input id="phones" dir="ltr" inputmode="tel" style="text-align:right;unicode-bidi:plaintext"></div></div><div class="actions" style="margin-top:12px"><button class="btn primary" id="saveSettings">حفظ الإعدادات</button></div></div>
+  <div class="grid two"><div class="field"><label>اسم الشركة</label><input id="companyName"></div><div class="field"><label>وصف الخدمة</label><input id="companyLine"></div><div class="field" style="grid-column:1/-1"><label>أرقام التواصل (افصل بينها بفاصلة)</label><input id="phones" dir="ltr" inputmode="tel" style="text-align:right;unicode-bidi:plaintext"></div></div><div class="actions" style="margin-top:12px"><button class="btn primary" id="saveSettings">حفظ الإعدادات</button></div></div>
 </section>
 <section class="column preview-column" id="previewColumn"><div class="panel preview-panel preview-sticky"><div class="preview-tools"><div><h3>معاينة عرض السعر</h3></div><div class="actions"><button class="btn primary" id="printQuote">طباعة / PDF</button></div></div><div class="preview-stage"><div id="quotePages"></div></div></div></section>
 </main>
-<nav class="mobile-tabs"><button class="active" data-mobile-tab="editor">البيانات</button><button data-mobile-tab="preview">المعاينة</button><button data-mobile-tab="saved">المحفوظات</button><button data-mobile-tab="settings">الإعدادات</button></nav>
+<nav class="mobile-tabs"><button class="active" data-mobile-tab="editor">البيانات</button><button data-mobile-tab="preview">المعاينة</button><button data-mobile-tab="saved">المحفوظات</button></nav>
 <div class="toast" id="toast"></div>
 <datalist id="hotelNames"></datalist><datalist id="roomTypes"></datalist><datalist id="mealPlans"></datalist><datalist id="views"></datalist>
 <script src="./app.js"></script>
