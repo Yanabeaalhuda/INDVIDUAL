@@ -37,7 +37,7 @@ function normalize(){
   app=app&&typeof app==='object'?app:d;
   app.draft=Object.assign(d.draft,app.draft||{});
   app.library=Array.isArray(app.library)?app.library.slice(0,250):[];
-  app.settings=Object.assign(d.settings,app.settings||{});
+  app.settings=Object.assign(d.settings,app.settings||{});app.settings.logo=ORIGINAL_LOGO;
   if(!app.settings.companyLine||app.settings.companyLine==='خدمات الفنادق والحجوزات')app.settings.companyLine='سكن مطمئن لرحلة مباركة';
   app.settings.phones=normalizePhones(app.settings.phones||PHONE_DEFAULT.join('، '));
   app.draft.items=Array.isArray(app.draft.items)&&app.draft.items.length?app.draft.items.slice(0,MAX_OFFERS):[defaultOffer()];
@@ -343,7 +343,7 @@ function renderPreview(){
     const finalBlock=pageIndex===totalPages-1?`<div class="grand-total"><span>الإجمالي النهائي لجميع الخيارات</span><b>${money(grandTotal())} ${esc(q.currency)}</b></div><div class="closing"><b>${esc(q.notes)}</b><br>${esc(q.closing)}</div>`:'';
     return`<article class="quote-page">
       <header class="quote-header">
-        <img src="${esc(sets.logo||ORIGINAL_LOGO)}">
+        <img src="${ORIGINAL_LOGO}" alt="شعار الشركة" onerror="this.onerror=null;this.src=ORIGINAL_LOGO">
         <div class="quote-title"><h1>عرض سعر للعميل</h1><p>تفاصيل الإقامة والحجز المقترح</p></div>
         <div class="quote-date"><b>التاريخ</b><br>${dateLabel(q.quoteDate)}</div>
       </header>
@@ -582,11 +582,22 @@ function renderAll(){
   renderSettings();
 }
 
+
+function updateScale(){
+  const stage=document.querySelector('.preview-stage');
+  if(!stage)return;
+  const availableWidth=stage.clientWidth-16;
+  if(availableWidth<=0)return;
+  const scale=availableWidth<794?Math.max(0.2,availableWidth/794):1;
+  document.documentElement.style.setProperty('--preview-scale',scale.toFixed(4));
+}
+
 function setMobileTab(tab){
   const e=document.getElementById('editorColumn'),p=document.getElementById('previewColumn');
   if(!e||!p)return;
   e.classList.toggle('mobile-hidden',tab==='preview');
   p.classList.toggle('mobile-hidden',tab!=='preview');
+  if(tab==='preview'){setTimeout(updateScale,30);setTimeout(updateScale,150);}
   if(tab==='saved'){
     e.classList.remove('mobile-hidden');
     setTimeout(()=>document.getElementById('savedPanel')?.scrollIntoView({behavior:'smooth'}),20);
@@ -642,28 +653,11 @@ function init(){
   const saveSettingsBtn = document.getElementById('saveSettings');
   if(saveSettingsBtn) saveSettingsBtn.onclick=saveSettings;
 
-  const resetLogoBtn = document.getElementById('resetLogo');
-  if(resetLogoBtn) resetLogoBtn.onclick=()=>{
-    app.settings.logo=ORIGINAL_LOGO;
-    persist();
-    renderPreview();
-    toast('تم إرجاع الشعار الأصلي');
-  };
 
-  const logoUploadBtn = document.getElementById('logoUpload');
-  if(logoUploadBtn) logoUploadBtn.onchange=e=>{
-    const f=e.target.files[0];
-    if(!f)return;
-    const r=new FileReader();
-    r.onload=()=>{
-      app.settings.logo=r.result;
-      persist();
-      renderPreview();
-      toast('تم تغيير الشعار');
-    };
-    r.readAsDataURL(f);
-  };
 
+  updateScale();
+  window.addEventListener('resize',updateScale);
+  window.addEventListener('orientationchange',()=>setTimeout(updateScale,150));
   document.querySelectorAll('[data-mobile-tab]').forEach(b=>b.onclick=()=>setMobileTab(b.dataset.mobileTab));
   window.addEventListener('beforeunload',persist);
 }
