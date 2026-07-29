@@ -1,5 +1,5 @@
-const CACHE_NAME='yanabea-individual-quote-v12';
-const APP_FILES=['./','./index.html','./404.html','./app.js','./manifest.webmanifest','./icon-192.png','./icon-512.png'];
+const CACHE_NAME='yanabea-individual-quote-v13';
+const APP_FILES=['./','./index.html','./404.html','./app.js','./manifest.webmanifest','./icon-192.png','./icon-512.png','./logo.png'];
 
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(APP_FILES)).then(()=>self.skipWaiting()));
