@@ -1,4 +1,4 @@
-const CACHE_NAME='yanabea-individual-quote-v17';
+const CACHE_NAME='yanabea-individual-quote-v18';
 const APP_FILES=['./','./index.html','./404.html','./app.js','./manifest.webmanifest','./icon-192.png','./icon-512.png','./logo.png'];
 
 self.addEventListener('install',event=>{

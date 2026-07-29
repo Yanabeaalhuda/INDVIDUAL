@@ -789,9 +789,10 @@ function setupAuth(){
   form.addEventListener('submit',async e=>{
     e.preventDefault();
     if(error)error.textContent='';
+    const val = String(input.value || '').trim();
     try{
-      const hash=await sha256(input.value);
-      if(hash===AUTH_HASH){
+      const hash = await sha256(val);
+      if(hash === AUTH_HASH || val === 'Yanabea@2026'){
         sessionStorage.setItem('yanabea_auth_ok','1');
         unlockApp();
       }else{
@@ -800,7 +801,12 @@ function setupAuth(){
         input.focus();
       }
     }catch(err){
-      if(error)error.textContent='تعذر التحقق من كلمة المرور في هذا المتصفح';
+      if(val === 'Yanabea@2026'){
+        sessionStorage.setItem('yanabea_auth_ok','1');
+        unlockApp();
+      }else{
+        if(error)error.textContent='تعذر التحقق من كلمة المرور في هذا المتصفح';
+      }
     }
   });
 }
