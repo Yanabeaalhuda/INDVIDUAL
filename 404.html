@@ -29,8 +29,8 @@ input,select,textarea,button{font-family:'ExpoArabic','HelveticaBold',Arial,sans
 .brand h1{font-size:17px;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .top-actions{display:flex;gap:8px;flex-wrap:wrap}
 
-.shell{max-width:1480px;margin:0 auto;padding:18px;display:grid;grid-template-columns:minmax(430px,.92fr) minmax(480px,1.08fr);gap:18px;align-items:start}
-.column{min-width:0}
+.shell{max-width:1480px;margin:0 auto;padding:18px;display:grid;grid-template-columns:minmax(400px,.92fr) minmax(450px,1.08fr);gap:18px;align-items:start}
+.column{min-width:0;width:100%}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:18px;margin-bottom:15px}
 .panel h2,.panel h3{margin:0;color:var(--burg)}
 .panel-sub{font-size:12px;color:var(--muted);line-height:1.7;margin:6px 0 0}
@@ -57,8 +57,9 @@ input,select,textarea,button{font-family:'ExpoArabic','HelveticaBold',Arial,sans
 
 .preview-sticky{position:sticky;top:88px}
 .preview-tools{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
-.preview-stage{background:#d2c8cb;border-radius:16px;padding:14px 8px;max-height:calc(100vh - 130px);overflow-x:hidden;overflow-y:auto;display:flex;flex-direction:column;align-items:center}
-.quote-page{width:794px;height:1123px;background:#fff;margin:0 auto 16px;position:relative;overflow:hidden;color:#32151e;box-shadow:0 10px 30px rgba(0,0,0,.14);transform:scale(var(--preview-scale,1));transform-origin:top center;margin-bottom:calc(-1123px * (1 - var(--preview-scale,1)) + 16px);flex-shrink:0}
+.preview-stage{background:#d2c8cb;border-radius:16px;padding:14px 8px;max-height:calc(100vh - 130px);overflow-x:hidden;overflow-y:auto;display:flex;flex-direction:column;align-items:center;width:100%}
+.quote-page-wrapper{width:100%;display:flex;justify-content:center;align-items:flex-start;margin-bottom:16px;overflow:hidden;height:calc(1123px * var(--preview-scale,1))}
+.quote-page{width:794px;height:1123px;background:#fff;position:relative;overflow:hidden;color:#32151e;box-shadow:0 10px 30px rgba(0,0,0,.14);transform:scale(var(--preview-scale,1));transform-origin:top center;flex-shrink:0}
 .quote-header{height:132px;background:linear-gradient(130deg,var(--burg2),var(--burg));color:#fff;padding:20px 24px;display:grid;grid-template-columns:92px 1fr 140px;align-items:center;gap:16px;border-bottom:7px solid var(--gold)}
 .quote-header img{width:92px;height:92px;object-fit:contain;border-radius:50%;background:#7b1531;border:2px solid rgba(255,255,255,.2);flex-shrink:0}
 .quote-title{text-align:center}
@@ -94,7 +95,7 @@ input,select,textarea,button{font-family:'ExpoArabic','HelveticaBold',Arial,sans
 .mobile-tabs{display:none}
 
 @media(max-width:1050px){
-  .shell{grid-template-columns:1fr;gap:14px;padding:14px}
+  .shell{display:flex;flex-direction:column;gap:14px;padding:12px}
   .preview-sticky{position:static}
   .preview-stage{max-height:none}
   .grid.three{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -103,17 +104,17 @@ input,select,textarea,button{font-family:'ExpoArabic','HelveticaBold',Arial,sans
 
 @media(max-width:650px){
   body{padding-bottom:66px}
-  .appbar-inner{min-height:58px;padding:8px 12px}
-  .brand img{width:40px;height:40px}
+  .appbar-inner{min-height:56px;padding:6px 12px}
+  .brand img{width:38px;height:38px}
   .brand h1{font-size:14px}
   .top-actions{display:none}
   .shell{padding:8px;display:block}
-  .panel{padding:14px;border-radius:14px;margin-bottom:12px}
+  .panel{padding:12px;border-radius:14px;margin-bottom:10px}
   .grid.two,.grid.three,.pricing-fields{grid-template-columns:1fr}
   .section-head{align-items:stretch;flex-direction:column;gap:8px}
   .section-head .btn{width:100%}
-  .preview-stage{padding:8px 4px}
-  .mobile-tabs{position:fixed;z-index:100;bottom:0;left:0;right:0;height:62px;background:#fff;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);box-shadow:0 -5px 22px rgba(70,12,30,.12)}
+  .preview-stage{padding:10px 4px}
+  .mobile-tabs{position:fixed;z-index:100;bottom:0;left:0;right:0;height:60px;background:#fff;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);box-shadow:0 -5px 22px rgba(70,12,30,.12)}
   .mobile-tabs button{border:0;background:#fff;color:#71545d;font-size:11px;font-weight:700}
   .mobile-tabs button.active{color:var(--burg);background:#fff6f7}
   .column.mobile-hidden{display:none!important}
@@ -129,6 +130,7 @@ input,select,textarea,button{font-family:'ExpoArabic','HelveticaBold',Arial,sans
   .preview-column{display:block!important}
   .panel.preview-panel{border:0;box-shadow:none;padding:0;margin:0}
   .preview-stage{padding:0;background:#fff;overflow:visible;max-height:none}
+  .quote-page-wrapper{height:auto!important;margin:0!important}
   .quote-page{width:210mm;height:297mm;box-shadow:none;margin:0;transform:none!important;page-break-after:always;break-after:page}
   .quote-page:last-child{page-break-after:auto;break-after:auto}
   .preview-offer{break-inside:avoid}
@@ -146,7 +148,7 @@ input,select,textarea,button{font-family:'ExpoArabic','HelveticaBold',Arial,sans
     <div id="authError" class="auth-error"></div>
   </form>
 </div>
-<header class="appbar"><div class="appbar-inner"><div class="brand"><img id="brandLogo" alt="الشعار" onerror="this.onerror=null;this.src=ORIGINAL_LOGO"><div><h1 id="appTitle">عرض سعر للأفراد</h1></div></div><div class="top-actions"><button class="btn gold" id="newQuoteTop">عرض جديد</button><button class="btn light" id="saveQuoteTop">حفظ العرض</button><button class="btn outline" id="printTop">طباعة / PDF</button></div></div></header>
+<header class="appbar"><div class="appbar-inner"><div class="brand"><img id="brandLogo" alt="شعار الشركة"><div><h1 id="appTitle">عرض سعر للأفراد</h1></div></div><div class="top-actions"><button class="btn gold" id="newQuoteTop">عرض جديد</button><button class="btn light" id="saveQuoteTop">حفظ العرض</button><button class="btn outline" id="printTop">طباعة / PDF</button></div></div></header>
 <main class="shell">
 <section class="column editor-column" id="editorColumn">
   <div class="panel" id="customerPanel"><div class="section-head"><div><h2>بيانات عرض السعر</h2></div><span class="stat" id="grandStat">الإجمالي: 0</span></div>
