@@ -1,0 +1,34 @@
+FULL AUDIT — YANABEA INDIVIDUAL QUOTE APP — v22
+Date: 2026-07-30
+
+FIXED IN v21
+1. Removed the ~2.23 MB embedded base64 logo from app.js. The app now uses ./logo.png.
+   This reduces app.js dramatically and prevents the same large image from being written to localStorage on every save.
+2. Corrected Service Worker offline fallback. Missing JS/images/assets no longer receive index.html as a fake successful response; only page navigation falls back to index.html.
+3. Corrected the SHA-256 fallback surrogate-pair bit mask (0x33f -> 0x3ff). ASCII passwords were unaffected, but Unicode hashing is now correct.
+4. renderSaved() now sorts a copy instead of mutating the stored library array.
+5. Updated app and Service Worker cache version to v21.
+
+VALIDATION PASSED
+- app.js syntax: PASS
+- sw.js syntax: PASS
+- Local references: PASS (app.js, manifest, icons, logo)
+- manifest JSON: PASS
+- vercel.json JSON: PASS
+- No external hyperlinks or external runtime dependencies detected.
+- Price field slow-entry regression: prior v20 fix retained.
+
+KNOWN BUSINESS / DATA WARNINGS — NOT AUTO-CHANGED
+1. Hotel Al Shohada has duplicate identical date/room ranges with prices 450 and 590. The first match wins, so 590 is unreachable.
+2. Slash rates are automatically interpreted as smaller=weekday and larger=weekend. Supplier convention should be confirmed.
+3. Extra-bed price is shown but is not included in offer totals.
+4. Weekend is hardcoded as Friday/Saturday.
+5. A stay crossing two supplier rate periods is priced using the check-in period only.
+6. When no rate covers the selected date, matchingRate() chooses the nearest available period rather than reporting no applicable rate.
+7. The login is a client-side convenience gate, not server-side security.
+
+V22 CHANGE
+- Removed the overall/grand total because hotel offers are alternatives.
+- Each hotel option still displays its own independent total.
+- Removed grand total from editor header, preview/print pages, and copied quote text.
+- Service worker cache bumped to v22.

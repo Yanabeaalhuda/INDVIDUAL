@@ -1,5 +1,5 @@
-const CACHE_NAME='yanabea-individual-quote-v20';
-const APP_FILES=['./','./index.html','./404.html','./app.js?v=20','./manifest.webmanifest','./icon-192.png','./icon-512.png','./logo.png'];
+const CACHE_NAME='yanabea-individual-quote-v22';
+const APP_FILES=['./','./index.html','./404.html','./app.js?v=22','./manifest.webmanifest','./icon-192.png','./icon-512.png','./logo.png'];
 
 self.addEventListener('install',event=>{
   event.waitUntil(
@@ -29,6 +29,10 @@ self.addEventListener('fetch',event=>{
         }
         return response;
       })
-      .catch(()=>caches.match(request).then(cached=>cached||caches.match('./index.html')))
+      .catch(()=>caches.match(request).then(cached=>{
+        if(cached)return cached;
+        if(request.mode==='navigate')return caches.match('./index.html');
+        return Response.error();
+      }))
   );
 });
