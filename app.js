@@ -63,7 +63,24 @@ function normalize(){
 }
 
 function load(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY))||defaultData()}catch(e){return defaultData()}}
-function persist(){normalize();localStorage.setItem(STORAGE_KEY,JSON.stringify(app))}
+
+let storageWarningShown=false;
+function persist(){
+  try{
+    // Do not call normalize() here: it replaces offer object references while
+    // input listeners are still using them, which can drop later keystrokes.
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(app));
+    storageWarningShown=false;
+    return true;
+  }catch(e){
+    console.error('Unable to save quote data',e);
+    if(!storageWarningShown){
+      storageWarningShown=true;
+      toast('تعذر الحفظ على الجهاز. صدّر نسخة احتياطية ثم حرر مساحة التخزين.');
+    }
+    return false;
+  }
+}
 
 let saveTimer;
 function autoSave(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>{persist();renderPreview();renderGrandStat()},120)}
@@ -238,6 +255,16 @@ function updateRoomTypesList(card, o){
   listEl.innerHTML=rooms.map(v=>`<option value="${esc(v)}"></option>`).join('');
 }
 
+function updateOfferCardSummary(card,o){
+  const s=stats(o);
+  const summary=card.querySelectorAll('.summary span');
+  if(summary[0])summary[0].textContent=nightsText(s.nights);
+  if(summary[1])summary[1].textContent=`WEEKDAY: ${s.weekday}`;
+  if(summary[2])summary[2].textContent=`WEEKEND: ${s.weekend}`;
+  const total=card.querySelector('.option-total b');
+  if(total)total.textContent=`${money(s.total)} ${app.draft.currency}`;
+}
+
 function renderOffers(){
   const wrap=document.getElementById('offers');
   if(!wrap)return;
@@ -252,7 +279,20 @@ function renderOffers(){
     if(!o)return;
     updateRoomTypesList(card, o);
 
-    const refresh=()=>{persist();renderOffers();renderPreview();renderGrandStat()};
+    const refresh=()=>{
+      clearTimeout(saveTimer);
+      persist();
+      renderOffers();
+      renderPreview();
+      renderGrandStat();
+    };
+    const commitWithoutRebuild=()=>{
+      clearTimeout(saveTimer);
+      persist();
+      updateOfferCardSummary(card,o);
+      renderPreview();
+      renderGrandStat();
+    };
     
     const mode=card.querySelector('[data-hotel-mode]');
     if(mode)mode.addEventListener('change',()=>{
@@ -282,13 +322,15 @@ function renderOffers(){
 
     card.querySelectorAll('[data-key]').forEach(el=>{
       const key=el.dataset.key;
+      const needsRebuild=['pricingMode','roomType','checkIn','checkOut'].includes(key);
       el.addEventListener('input',()=>{
         o[key]=el.value;
+        updateOfferCardSummary(card,o);
         if(key==='checkIn'||key==='checkOut'){
           if(key==='checkIn'&&o.checkOut&&o.checkOut<=o.checkIn){
             const d=new Date(`${o.checkIn}T12:00:00`);
             d.setDate(d.getDate()+1);
-            o.checkOut=d.toISOString().slice(0,10);
+            o.checkOut=localISODate(d);
           }
           applyRate(o);
           persist();
@@ -301,10 +343,12 @@ function renderOffers(){
         if(key==='checkIn'&&o.checkOut&&o.checkOut<=o.checkIn){
           const d=new Date(`${o.checkIn}T12:00:00`);
           d.setDate(d.getDate()+1);
-          o.checkOut=d.toISOString().slice(0,10);
+          o.checkOut=localISODate(d);
         }
         if(['roomType','checkIn','checkOut'].includes(key))applyRate(o);
-        refresh();
+        // Prices and ordinary text fields must not destroy/recreate the form on blur.
+        if(needsRebuild)refresh();
+        else commitWithoutRebuild();
       });
     });
   });
