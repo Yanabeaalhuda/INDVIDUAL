@@ -217,6 +217,7 @@ async function printQuotePdf(){
   document.documentElement.classList.add('print-preparing');
   try{
     await ensurePdfFonts();
+    renderPreview();
     await waitForQuoteImages();
     if(document.fonts)await document.fonts.ready;
     await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
@@ -229,15 +230,16 @@ async function printQuotePdf(){
   }
 }
 
-function duplicateCurrentOffer(){
+function duplicateOffer(id){
   if(app.draft.items.length>=MAX_OFFERS){toast('الحد الأقصى 8 خيارات');return}
-  const source=app.draft.items[app.draft.items.length-1]||defaultOffer();
-  const copy=clone(source);
+  const sourceIndex=app.draft.items.findIndex(item=>item.id===id);
+  if(sourceIndex<0){toast('تعذر العثور على الخيار المطلوب');return}
+  const copy=clone(app.draft.items[sourceIndex]);
   copy.id=uid();
-  app.draft.items.push(copy);
+  app.draft.items.splice(sourceIndex+1,0,copy);
   persist();
   renderAll();
-  toast('تم نسخ الخيار الأخير بكل بياناته');
+  toast(`تم نسخ الخيار ${sourceIndex+1} بكل بياناته`);
 }
 
 let saveTimer;
@@ -360,7 +362,10 @@ function offerHtml(o,i){
   return`<article class="offer-card" data-id="${o.id}">
     <div class="offer-title">
       <strong>${app.draft.items.length > 1 ? `الخيار ${i+1}` : `تفاصيل الحجز`}</strong>
-      <button class="btn danger small" data-remove="${o.id}">حذف</button>
+      <div class="offer-title-actions">
+        <button class="btn light small" type="button" data-copy-offer="${o.id}">نسخ الخيار</button>
+        <button class="btn danger small" type="button" data-remove="${o.id}">حذف</button>
+      </div>
     </div>
     <div class="grid three">
       <div class="field">
@@ -507,6 +512,8 @@ function renderOffers(){
     });
   });
 
+  wrap.querySelectorAll('[data-copy-offer]').forEach(btn=>btn.onclick=()=>duplicateOffer(btn.dataset.copyOffer));
+
   wrap.querySelectorAll('[data-remove]').forEach(btn=>btn.onclick=()=>{
     if(app.draft.items.length===1){toast('يجب وجود خيار واحد على الأقل');return}
     app.draft.items=app.draft.items.filter(x=>x.id!==btn.dataset.remove);
@@ -521,37 +528,129 @@ function previewPrice(o,s){
   return`سعر الليلة: ${money(o.nightlyPrice)} ${esc(app.draft.currency)}`;
 }
 
+function previewGreetingHtml(q){
+  return`<div class="greeting">عزيزي العميل / <b>${esc(q.customerName||'اسم العميل')}</b><br>${esc(q.intro)}</div>`;
+}
+
+function previewClosingHtml(q){
+  return`<div class="closing"><b>${esc(q.notes)}</b><br>${esc(q.closing)}</div>`;
+}
+
+function previewOfferHtml(o,globalIndex,q){
+  const st=stats(o);
+  const extraBedStr=num(o.extraBed)>0?`<br><small>السرير الإضافي: ${money(o.extraBed)} ${esc(q.currency)}</small>`:'';
+  const notesStr=o.notes?`<br><small>${esc(o.notes)}</small>`:'';
+  return`<section class="preview-offer" data-offer-index="${globalIndex}">
+    <div class="preview-offer-head"><span>${q.items.length>1?`الخيار ${globalIndex+1}`:`تفاصيل الإقامة`}</span><span>${nightsText(st.nights)}</span></div>
+    <div class="preview-offer-body">
+      <div class="hotel-name">${esc(o.hotelName||'اسم الفندق')}</div>
+      <div class="detail-grid">
+        <div class="detail"><b>الدخول</b><span>${dateLabel(o.checkIn)}</span></div>
+        <div class="detail"><b>الخروج</b><span>${dateLabel(o.checkOut)}</span></div>
+        <div class="detail"><b>الغرفة</b><span>${esc(o.roomType||'—')}</span></div>
+        <div class="detail"><b>الوجبة</b><span>${esc(o.mealPlan||'—')}</span></div>
+        <div class="detail"><b>الإطلالة</b><span>${esc(o.view||'—')}</span></div>
+        <div class="detail"><b>توزيع الليالي</b><span>${st.weekday} وسط الأسبوع · ${st.weekend} ويك إند</span></div>
+      </div>
+      <div class="price-line">
+        <span>${previewPrice(o,st)}${extraBedStr}${notesStr}</span>
+        <b>${money(st.total)} ${esc(q.currency)}</b>
+      </div>
+    </div>
+  </section>`;
+}
+
+function outerHeight(el){
+  if(!el)return 0;
+  const style=getComputedStyle(el);
+  return el.getBoundingClientRect().height+(parseFloat(style.marginTop)||0)+(parseFloat(style.marginBottom)||0);
+}
+
+function measurePreviewLayout(q,sets){
+  const probe=document.createElement('div');
+  probe.className='quote-measure-root';
+  probe.setAttribute('aria-hidden','true');
+  probe.innerHTML=`<article class="quote-page quote-measure-page">
+    <header class="quote-header">
+      <img src="${window.ORIGINAL_LOGO}" alt="">
+      <div class="quote-title"><h1>عرض سعر للعميل</h1><p>تفاصيل الإقامة والحجز المقترح</p></div>
+      <div class="quote-date"><b>التاريخ</b><br>${dateLabel(q.quoteDate)}</div>
+    </header>
+    <main class="quote-body">
+      <div class="measure-greeting">${previewGreetingHtml(q)}</div>
+      <div class="measure-offers">${q.items.map((o,i)=>previewOfferHtml(o,i,q)).join('')}</div>
+      <div class="measure-closing">${previewClosingHtml(q)}</div>
+    </main>
+    <footer class="quote-footer">
+      <div class="phones" dir="ltr">${phoneList().map(p=>`<span class="phone-number" dir="ltr">${esc(p)}</span>`).join('')}</div>
+      <div class="company-line">${esc(sets.companyName)} · ${esc(sets.companyLine)}</div>
+    </footer>
+  </article>`;
+  document.body.appendChild(probe);
+  const page=probe.querySelector('.quote-page');
+  const header=probe.querySelector('.quote-header');
+  const body=probe.querySelector('.quote-body');
+  const footer=probe.querySelector('.quote-footer');
+  const bodyStyle=getComputedStyle(body);
+  const pageHeight=page.getBoundingClientRect().height||1123;
+  const bottomReserve=Math.max(parseFloat(bodyStyle.paddingBottom)||0,(footer?.getBoundingClientRect().height||0)+20);
+  const contentLimit=Math.max(100,pageHeight-header.getBoundingClientRect().height-(parseFloat(bodyStyle.paddingTop)||0)-bottomReserve-4);
+  const greetingHeight=outerHeight(probe.querySelector('.greeting'));
+  const offerHeights=[...probe.querySelectorAll('.preview-offer')].map(outerHeight);
+  const closingHeight=outerHeight(probe.querySelector('.closing'));
+  probe.remove();
+  return{contentLimit,greetingHeight,offerHeights,closingHeight};
+}
+
+function paginatePreviewItems(q,sets){
+  const measured=measurePreviewLayout(q,sets);
+  const pages=[];
+  const heights=[];
+  const newPage=()=>{pages.push([]);heights.push(measured.greetingHeight)};
+  newPage();
+
+  q.items.forEach((offer,index)=>{
+    const offerHeight=measured.offerHeights[index]||0;
+    let pageIndex=pages.length-1;
+    if(pages[pageIndex].length&&heights[pageIndex]+offerHeight>measured.contentLimit){
+      newPage();
+      pageIndex=pages.length-1;
+    }
+    pages[pageIndex].push({offer,index});
+    heights[pageIndex]+=offerHeight;
+  });
+
+  let last=pages.length-1;
+  if(heights[last]+measured.closingHeight>measured.contentLimit){
+    const tail=[];
+    let tailHeight=measured.greetingHeight+measured.closingHeight;
+    while(pages[last].length){
+      const candidate=pages[last][pages[last].length-1];
+      const candidateHeight=measured.offerHeights[candidate.index]||0;
+      if(tailHeight+candidateHeight>measured.contentLimit)break;
+      pages[last].pop();
+      heights[last]-=candidateHeight;
+      tail.unshift(candidate);
+      tailHeight+=candidateHeight;
+    }
+    if(tail.length){
+      if(!pages[last].length){pages.pop();heights.pop()}
+      pages.push(tail);
+      heights.push(tailHeight-measured.closingHeight);
+    }else{
+      pages.push([]);
+      heights.push(measured.greetingHeight);
+    }
+  }
+  return pages;
+}
+
 function renderPreview(){
-  const q=app.draft,sets=app.settings,perPage=3,chunks=[];
-  for(let i=0;i<q.items.length;i+=perPage)chunks.push(q.items.slice(i,i+perPage));
-  if(!chunks.length)chunks.push([]);
+  const q=app.draft,sets=app.settings,chunks=paginatePreviewItems(q,sets);
   const totalPages=chunks.length;
   const pages=chunks.map((chunk,pageIndex)=>{
-    const items=chunk.map((o,i)=>{
-      const st=stats(o),globalIndex=pageIndex*perPage+i;
-      const extraBedStr = num(o.extraBed) > 0 ? `<br><small>السرير الإضافي: ${money(o.extraBed)} ${esc(q.currency)}</small>` : '';
-      const notesStr = o.notes ? `<br><small>${esc(o.notes)}</small>` : '';
-      return`<section class="preview-offer">
-        <div class="preview-offer-head"><span>${q.items.length > 1 ? `الخيار ${globalIndex+1}` : `تفاصيل الإقامة`}</span><span>${nightsText(st.nights)}</span></div>
-        <div class="preview-offer-body">
-          <div class="hotel-name">${esc(o.hotelName||'اسم الفندق')}</div>
-          <div class="detail-grid">
-            <div class="detail"><b>الدخول</b><span>${dateLabel(o.checkIn)}</span></div>
-            <div class="detail"><b>الخروج</b><span>${dateLabel(o.checkOut)}</span></div>
-            <div class="detail"><b>الغرفة</b><span>${esc(o.roomType||'—')}</span></div>
-            <div class="detail"><b>الوجبة</b><span>${esc(o.mealPlan||'—')}</span></div>
-            <div class="detail"><b>الإطلالة</b><span>${esc(o.view||'—')}</span></div>
-            <div class="detail"><b>توزيع الليالي</b><span>${st.weekday} وسط الأسبوع · ${st.weekend} ويك إند</span></div>
-          </div>
-          <div class="price-line">
-            <span>${previewPrice(o,st)}${extraBedStr}${notesStr}</span>
-            <b>${money(st.total)} ${esc(q.currency)}</b>
-          </div>
-        </div>
-      </section>`;
-    }).join('');
-
-    const finalBlock=pageIndex===totalPages-1?`<div class="closing"><b>${esc(q.notes)}</b><br>${esc(q.closing)}</div>`:'';
+    const items=chunk.map(({offer,index})=>previewOfferHtml(offer,index,q)).join('');
+    const finalBlock=pageIndex===totalPages-1?previewClosingHtml(q):'';
     return`<div class="quote-page-wrapper">
     <article class="quote-page">
       <header class="quote-header">
@@ -560,11 +659,11 @@ function renderPreview(){
         <div class="quote-date"><b>التاريخ</b><br>${dateLabel(q.quoteDate)}</div>
       </header>
       <main class="quote-body">
-        <div class="greeting">عزيزي العميل / <b>${esc(q.customerName||'اسم العميل')}</b><br>${esc(q.intro)}</div>
+        ${previewGreetingHtml(q)}
         ${items}
         ${finalBlock}
       </main>
-      ${totalPages>1?`<div style="position:absolute;bottom:82px;left:28px;color:#8a6f77;font-size:11px">${pageIndex+1} / ${totalPages}</div>`:''}
+      ${totalPages>1?`<div dir="ltr" style="position:absolute;bottom:82px;left:28px;color:#8a6f77;font-size:11px;direction:ltr;unicode-bidi:isolate">${pageIndex+1} / ${totalPages}</div>`:''}
       <footer class="quote-footer">
         <div class="phones" dir="ltr">${phoneList().map(p=>`<span class="phone-number" dir="ltr">${esc(p)}</span>`).join('')}</div>
         <div class="company-line">${esc(sets.companyName)} · ${esc(sets.companyLine)}</div>
@@ -833,7 +932,7 @@ function init(){
   normalize();
   buildLists();
   renderAll();
-  ensurePdfFonts().catch(()=>{});
+  ensurePdfFonts().then(()=>renderPreview()).catch(()=>{});
 
   const addOfferBtn = document.getElementById('addOffer');
   if(addOfferBtn) addOfferBtn.onclick=()=>{
@@ -842,9 +941,6 @@ function init(){
     persist();
     renderAll();
   };
-
-  const copyOfferBtn=document.getElementById('copyOffer');
-  if(copyOfferBtn)copyOfferBtn.onclick=duplicateCurrentOffer;
 
   ['saveQuote','saveQuoteTop'].forEach(id=>{
     const btn=document.getElementById(id);

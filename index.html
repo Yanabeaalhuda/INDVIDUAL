@@ -57,7 +57,7 @@ input,select,textarea,button{font-family:'ExpoArabic','HelveticaBold',Arial,sans
 .btn.primary{background:var(--burg);color:#fff}.btn.gold{background:var(--gold);color:#40240d}.btn.light{background:#f4e9ed;color:var(--burg)}.btn.outline{background:#fff;border:1px solid #cfadb8;color:var(--burg)}.btn.danger{background:#fff0ef;color:var(--danger);border:1px solid #efc7c3}.btn.small{padding:7px 10px;font-size:12px}.btn:disabled{opacity:.45;cursor:not-allowed}
 
 .offer-card{border:1px solid var(--line);border-radius:15px;padding:14px;margin-bottom:12px;background:linear-gradient(145deg,#fff,#fffdf9)}
-.offer-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px}.offer-title strong{color:var(--burg)}
+.offer-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:11px}.offer-title strong{color:var(--burg)}.offer-title-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
 .pricing-fields{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .summary{display:flex;gap:7px;flex-wrap:wrap;margin-top:11px}
 .summary span{padding:7px 9px;background:#f7edf0;border-radius:999px;color:#61414b;font-size:11px}
@@ -104,6 +104,9 @@ input,select,textarea,button{font-family:'ExpoArabic','HelveticaBold',Arial,sans
 .quote-page{font-family:'ExpoArabic','HelveticaBold',Tahoma,Arial,sans-serif;font-synthesis:none}
 .quote-page .quote-title h1,.quote-page .quote-title p,.quote-page .greeting b,.quote-page .preview-offer-head,.quote-page .hotel-name,.quote-page .detail b,.quote-page .closing b{font-family:'GESSTwo','ExpoArabic',Tahoma,Arial,sans-serif;font-synthesis:none}
 .quote-page .price-line b,.quote-page .quote-date,.quote-page .phones{font-family:'HelveticaRounded','HelveticaBold','ExpoArabic',Tahoma,Arial,sans-serif;font-synthesis:none}
+
+.quote-measure-root{position:fixed;top:0;left:-10000px;width:794px;height:1123px;visibility:hidden;pointer-events:none;overflow:hidden;z-index:-1}
+.quote-measure-root .quote-page{transform:none!important;box-shadow:none!important}
 .font-settings{margin-top:16px;padding-top:15px;border-top:1px solid var(--line)}
 .font-settings h4{margin:0;color:var(--burg);font-family:'GESSTwo','ExpoArabic',Arial,sans-serif}
 .font-upload-card{border:1px solid var(--line);border-radius:12px;padding:11px;background:#fffdfb;display:flex;flex-direction:column;gap:8px}
@@ -185,6 +188,8 @@ input,select,textarea,button{font-family:'ExpoArabic','HelveticaBold',Arial,sans
     height: auto !important;
     overflow: visible !important;
   }
+
+  .quote-measure-root {display:none !important;}
 
   .quote-page-wrapper {
     width: 210mm !important;
@@ -322,7 +327,7 @@ body.auth-locked .mobile-tabs {
       <div class="field" style="grid-column:1/-1"><label>رسالة المقدمة</label><input id="intro"></div>
     </div>
   </div>
-  <div class="panel"><div class="section-head"><div><h3>خيارات الإقامة</h3></div><div class="actions"><button class="btn primary" id="addOffer">+ إضافة خيار</button><button class="btn light" id="copyOffer">نسخ الخيار</button></div></div><div id="offers"></div></div>
+  <div class="panel"><div class="section-head"><div><h3>خيارات الإقامة</h3></div><div class="actions"><button class="btn primary" id="addOffer">+ إضافة خيار</button></div></div><div id="offers"></div></div>
   <div class="panel"><h3>الرسالة والملاحظات</h3><div class="grid two" style="margin-top:12px"><div class="field"><label>ملاحظة الأسعار</label><textarea id="notes"></textarea></div><div class="field"><label>رسالة الختام</label><textarea id="closing"></textarea></div></div><div class="actions" style="margin-top:13px"><button class="btn primary" id="copyText">نسخ رسالة واتساب</button><button class="btn gold" id="saveQuote">حفظ العرض</button><button class="btn outline" id="newQuote">عرض جديد</button></div></div>
   <div class="panel" id="savedPanel"><div class="section-head"><div><h3>العروض المحفوظة</h3></div><div class="actions"><button class="btn outline small" id="exportBackup">حفظ نسخة احتياطية</button><label class="btn light small" for="importBackup">رفع نسخة احتياطية</label><input id="importBackup" type="file" accept="application/json" hidden></div></div><div id="savedList"></div></div>
   <div class="panel" id="settingsPanel"><h3>إعدادات الشركة</h3><div class="grid two" style="margin-top:12px"><div class="field"><label>اسم الشركة</label><input id="companyName"></div><div class="field"><label>وصف الخدمة</label><input id="companyLine"></div><div class="field" style="grid-column:1/-1"><label>أرقام التواصل (افصل بينها بفاصلة)</label><input id="phones" dir="ltr" inputmode="tel" style="text-align:right;unicode-bidi:plaintext"></div></div><div class="font-settings"><h4>خطوط المعاينة وملف PDF</h4><p class="panel-sub">الخطوط الأصلية مدمجة داخل المشروع وتعمل تلقائيًا على GitHub وفي المعاينة وملف PDF. ويمكن رفع خط بديل على هذا الجهاز عند الحاجة.</p><div class="grid two" style="margin-top:10px"><div class="font-upload-card"><strong>Expo Arabic — النصوص</strong><div class="actions"><label class="btn light small">رفع خط بديل<input id="fontUploadExpo" type="file" accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff,font/woff2" hidden></label><button class="btn outline small" type="button" data-reset-font="expo">الرجوع للمدمج</button></div><div class="font-file-name" id="fontNameExpo">لم يتم رفع ملف</div></div><div class="font-upload-card"><strong>GE SS Two — العناوين</strong><div class="actions"><label class="btn light small">رفع خط بديل<input id="fontUploadGess" type="file" accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff,font/woff2" hidden></label><button class="btn outline small" type="button" data-reset-font="gess">الرجوع للمدمج</button></div><div class="font-file-name" id="fontNameGess">لم يتم رفع ملف</div></div><div class="font-upload-card"><strong>Helvetica Bold — النصوص البديلة</strong><div class="actions"><label class="btn light small">رفع خط بديل<input id="fontUploadHelveticaBold" type="file" accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff,font/woff2" hidden></label><button class="btn outline small" type="button" data-reset-font="helveticaBold">الرجوع للمدمج</button></div><div class="font-file-name" id="fontNameHelveticaBold">لم يتم رفع ملف</div></div><div class="font-upload-card"><strong>Helvetica Rounded — الأرقام والأسعار</strong><div class="actions"><label class="btn light small">رفع خط بديل<input id="fontUploadHelveticaRounded" type="file" accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff,font/woff2" hidden></label><button class="btn outline small" type="button" data-reset-font="helveticaRounded">الرجوع للمدمج</button></div><div class="font-file-name" id="fontNameHelveticaRounded">لم يتم رفع ملف</div></div></div></div><div class="actions" style="margin-top:12px"><button class="btn primary" id="saveSettings">حفظ الإعدادات</button></div></div>
@@ -332,6 +337,6 @@ body.auth-locked .mobile-tabs {
 <nav class="mobile-tabs"><button class="active" data-mobile-tab="editor">البيانات</button><button data-mobile-tab="preview">المعاينة</button><button data-mobile-tab="saved">المحفوظات</button></nav>
 <div class="toast" id="toast"></div>
 <datalist id="hotelNames"></datalist><datalist id="roomTypes"></datalist><datalist id="mealPlans"></datalist><datalist id="views"></datalist>
-<script src="./app.js?v=24"></script>
+<script src="./app.js?v=26"></script>
 </body>
 </html>
