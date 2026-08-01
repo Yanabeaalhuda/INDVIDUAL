@@ -1,5 +1,5 @@
-const CACHE_NAME='yanabea-individual-quote-v26';
-const APP_FILES=['./','./index.html','./404.html','./app.js?v=26','./manifest.webmanifest','./icon-192.png','./icon-512.png','./logo.png','./fonts/ExpoArabic-SemiBold.ttf','./fonts/GE-SS-Two-Bold.otf','./fonts/Helvetica-Bold.ttf','./fonts/Helvetica-Rounded-Bold.otf'];
+const CACHE_NAME='yanabea-individual-quote-v27';
+const APP_FILES=['./','./index.html','./404.html','./vendor/html2canvas.min.js?v=27','./vendor/jspdf.umd.min.js?v=27','./app.js?v=27','./manifest.webmanifest','./icon-192.png','./icon-512.png','./logo.png','./fonts/ExpoArabic-SemiBold.ttf','./fonts/GE-SS-Two-Bold.otf','./fonts/Helvetica-Bold.ttf','./fonts/Helvetica-Rounded-Bold.otf'];
 
 self.addEventListener('install',event=>{
   event.waitUntil(

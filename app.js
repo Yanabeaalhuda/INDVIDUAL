@@ -230,6 +230,112 @@ async function printQuotePdf(){
   }
 }
 
+function safePdfFilePart(value){
+  return String(value||'')
+    .trim()
+    .replace(/[\\/:*?"<>|]+/g,'-')
+    .replace(/\s+/g,' ')
+    .replace(/[. ]+$/g,'')
+    .slice(0,80);
+}
+
+function quotePdfFileName(){
+  const customer=safePdfFilePart(app.draft.customerName);
+  const quoteDate=safePdfFilePart(app.draft.quoteDate||today());
+  return `عرض سعر${customer?` - ${customer}`:''} - ${quoteDate}.pdf`;
+}
+
+function setPdfDownloadBusy(busy){
+  ['downloadPdfQuote','downloadPdfTop'].forEach(id=>{
+    const btn=document.getElementById(id);
+    if(!btn)return;
+    if(busy){
+      btn.dataset.idleText=btn.textContent;
+      btn.textContent='جاري إعداد PDF...';
+      btn.disabled=true;
+      btn.setAttribute('aria-busy','true');
+    }else{
+      btn.textContent=btn.dataset.idleText||'حفظ PDF';
+      btn.disabled=false;
+      btn.removeAttribute('aria-busy');
+      delete btn.dataset.idleText;
+    }
+  });
+}
+
+async function downloadQuotePdf(){
+  if(typeof window.html2canvas!=='function'||!window.jspdf||typeof window.jspdf.jsPDF!=='function'){
+    alert('تعذر تحميل أداة إنشاء PDF. أعد تحميل الصفحة ثم حاول مرة أخرى.');
+    return;
+  }
+
+  const root=document.documentElement;
+  setPdfDownloadBusy(true);
+  root.classList.add('pdf-generating');
+  toast('جاري إعداد ملف PDF...');
+
+  try{
+    await ensurePdfFonts();
+    renderPreview();
+    await waitForQuoteImages();
+    if(document.fonts)await document.fonts.ready;
+    await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+
+    const pages=[...document.querySelectorAll('#quotePages .quote-page')];
+    if(!pages.length)throw new Error('لا توجد صفحات لعرض السعر');
+
+    const {jsPDF}=window.jspdf;
+    const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4',compress:true});
+    pdf.setProperties({
+      title:`عرض سعر${app.draft.customerName?` - ${app.draft.customerName}`:''}`,
+      subject:'عرض سعر للإقامة والحجز',
+      author:app.settings.companyName||'ينابيع الهدى المتميزة',
+      creator:'برنامج عروض أسعار ينابيع الهدى'
+    });
+
+    for(let index=0;index<pages.length;index++){
+      const canvas=await window.html2canvas(pages[index],{
+        scale:2,
+        useCORS:true,
+        allowTaint:false,
+        backgroundColor:'#ffffff',
+        logging:false,
+        imageTimeout:15000,
+        width:794,
+        height:1123,
+        windowWidth:794,
+        windowHeight:1123,
+        scrollX:0,
+        scrollY:0
+      });
+      if(index>0)pdf.addPage('a4','portrait');
+      const imageData=canvas.toDataURL('image/jpeg',0.97);
+      pdf.addImage(imageData,'JPEG',0,0,210,297,undefined,'FAST');
+      canvas.width=1;
+      canvas.height=1;
+    }
+
+    const blob=pdf.output('blob');
+    const downloadUrl=URL.createObjectURL(blob);
+    const link=document.createElement('a');
+    link.href=downloadUrl;
+    link.download=quotePdfFileName();
+    link.rel='noopener';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(()=>URL.revokeObjectURL(downloadUrl),30000);
+    toast('تم تنزيل ملف PDF');
+  }catch(error){
+    console.error('Direct PDF download failed',error);
+    alert('تعذر تنزيل ملف PDF مباشرة. يمكنك استخدام زر الطباعة كخيار بديل.');
+  }finally{
+    root.classList.remove('pdf-generating');
+    setPdfDownloadBusy(false);
+    updatePreviewScale();
+  }
+}
+
 function duplicateOffer(id){
   if(app.draft.items.length>=MAX_OFFERS){toast('الحد الأقصى 8 خيارات');return}
   const sourceIndex=app.draft.items.findIndex(item=>item.id===id);
@@ -955,6 +1061,11 @@ function init(){
   ['printQuote','printTop'].forEach(id=>{
     const btn=document.getElementById(id);
     if(btn)btn.onclick=printQuotePdf;
+  });
+
+  ['downloadPdfQuote','downloadPdfTop'].forEach(id=>{
+    const btn=document.getElementById(id);
+    if(btn)btn.onclick=downloadQuotePdf;
   });
 
   const copyBtn = document.getElementById('copyText');

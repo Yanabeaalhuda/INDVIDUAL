@@ -115,6 +115,10 @@ input,select,textarea,button{font-family:'ExpoArabic','HelveticaBold',Arial,sans
 .font-upload-card .actions{gap:6px}
 .font-upload-card .btn{flex:1}
 .print-preparing .btn[id^='print']{pointer-events:none;opacity:.6}
+.pdf-generating .btn[id^='downloadPdf']{pointer-events:none;opacity:.6}
+.pdf-generating .preview-stage{overflow:visible!important;max-height:none!important}
+.pdf-generating .quote-page-wrapper{width:794px!important;height:1123px!important;margin-bottom:0!important;overflow:visible!important}
+.pdf-generating .quote-page{transform:none!important;box-shadow:none!important}
 
 @media(max-width:1050px){
   .shell{display:flex;flex-direction:column;gap:14px;padding:12px}
@@ -316,7 +320,7 @@ body.auth-locked .mobile-tabs {
     <div id="authError" class="auth-error"></div>
   </form>
 </div>
-<header class="appbar"><div class="appbar-inner"><div class="brand"><img id="brandLogo" alt="شعار الشركة"><div><h1 id="appTitle">عرض سعر للأفراد</h1></div></div><div class="top-actions"><button class="btn gold" id="newQuoteTop">عرض جديد</button><button class="btn light" id="saveQuoteTop">حفظ العرض</button><button class="btn outline" id="printTop">طباعة / PDF</button></div></div></header>
+<header class="appbar"><div class="appbar-inner"><div class="brand"><img id="brandLogo" alt="شعار الشركة"><div><h1 id="appTitle">عرض سعر للأفراد</h1></div></div><div class="top-actions"><button class="btn gold" id="newQuoteTop">عرض جديد</button><button class="btn light" id="saveQuoteTop">حفظ العرض</button><button class="btn gold" id="downloadPdfTop">حفظ PDF</button><button class="btn outline" id="printTop">طباعة</button></div></div></header>
 <main class="shell">
 <section class="column editor-column" id="editorColumn">
   <div class="panel" id="customerPanel"><div class="section-head"><div><h2>بيانات عرض السعر</h2></div></div>
@@ -332,11 +336,13 @@ body.auth-locked .mobile-tabs {
   <div class="panel" id="savedPanel"><div class="section-head"><div><h3>العروض المحفوظة</h3></div><div class="actions"><button class="btn outline small" id="exportBackup">حفظ نسخة احتياطية</button><label class="btn light small" for="importBackup">رفع نسخة احتياطية</label><input id="importBackup" type="file" accept="application/json" hidden></div></div><div id="savedList"></div></div>
   <div class="panel" id="settingsPanel"><h3>إعدادات الشركة</h3><div class="grid two" style="margin-top:12px"><div class="field"><label>اسم الشركة</label><input id="companyName"></div><div class="field"><label>وصف الخدمة</label><input id="companyLine"></div><div class="field" style="grid-column:1/-1"><label>أرقام التواصل (افصل بينها بفاصلة)</label><input id="phones" dir="ltr" inputmode="tel" style="text-align:right;unicode-bidi:plaintext"></div></div><div class="font-settings"><h4>خطوط المعاينة وملف PDF</h4><p class="panel-sub">الخطوط الأصلية مدمجة داخل المشروع وتعمل تلقائيًا على GitHub وفي المعاينة وملف PDF. ويمكن رفع خط بديل على هذا الجهاز عند الحاجة.</p><div class="grid two" style="margin-top:10px"><div class="font-upload-card"><strong>Expo Arabic — النصوص</strong><div class="actions"><label class="btn light small">رفع خط بديل<input id="fontUploadExpo" type="file" accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff,font/woff2" hidden></label><button class="btn outline small" type="button" data-reset-font="expo">الرجوع للمدمج</button></div><div class="font-file-name" id="fontNameExpo">لم يتم رفع ملف</div></div><div class="font-upload-card"><strong>GE SS Two — العناوين</strong><div class="actions"><label class="btn light small">رفع خط بديل<input id="fontUploadGess" type="file" accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff,font/woff2" hidden></label><button class="btn outline small" type="button" data-reset-font="gess">الرجوع للمدمج</button></div><div class="font-file-name" id="fontNameGess">لم يتم رفع ملف</div></div><div class="font-upload-card"><strong>Helvetica Bold — النصوص البديلة</strong><div class="actions"><label class="btn light small">رفع خط بديل<input id="fontUploadHelveticaBold" type="file" accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff,font/woff2" hidden></label><button class="btn outline small" type="button" data-reset-font="helveticaBold">الرجوع للمدمج</button></div><div class="font-file-name" id="fontNameHelveticaBold">لم يتم رفع ملف</div></div><div class="font-upload-card"><strong>Helvetica Rounded — الأرقام والأسعار</strong><div class="actions"><label class="btn light small">رفع خط بديل<input id="fontUploadHelveticaRounded" type="file" accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff,font/woff2" hidden></label><button class="btn outline small" type="button" data-reset-font="helveticaRounded">الرجوع للمدمج</button></div><div class="font-file-name" id="fontNameHelveticaRounded">لم يتم رفع ملف</div></div></div></div><div class="actions" style="margin-top:12px"><button class="btn primary" id="saveSettings">حفظ الإعدادات</button></div></div>
 </section>
-<section class="column preview-column" id="previewColumn"><div class="panel preview-panel preview-sticky"><div class="preview-tools"><div><h3>معاينة عرض السعر</h3></div><div class="actions"><button class="btn primary" id="printQuote">طباعة / PDF</button></div></div><div class="preview-stage"><div id="quotePages"></div></div></div></section>
+<section class="column preview-column" id="previewColumn"><div class="panel preview-panel preview-sticky"><div class="preview-tools"><div><h3>معاينة عرض السعر</h3></div><div class="actions"><button class="btn primary" id="downloadPdfQuote">حفظ PDF</button><button class="btn outline" id="printQuote">طباعة</button></div></div><div class="preview-stage"><div id="quotePages"></div></div></div></section>
 </main>
 <nav class="mobile-tabs"><button class="active" data-mobile-tab="editor">البيانات</button><button data-mobile-tab="preview">المعاينة</button><button data-mobile-tab="saved">المحفوظات</button></nav>
 <div class="toast" id="toast"></div>
 <datalist id="hotelNames"></datalist><datalist id="roomTypes"></datalist><datalist id="mealPlans"></datalist><datalist id="views"></datalist>
-<script src="./app.js?v=26"></script>
+<script src="./vendor/html2canvas.min.js?v=27"></script>
+<script src="./vendor/jspdf.umd.min.js?v=27"></script>
+<script src="./app.js?v=27"></script>
 </body>
 </html>
