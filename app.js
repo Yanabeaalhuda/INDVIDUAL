@@ -3,6 +3,14 @@ const HOTELS=[{"id":"e8827d5c0f","name":"فندق هيلتون أجنحة","engl
 const STORAGE_KEY='yanabea_individual_quote_lite_v1';
 const PHONE_DEFAULT=['+966555509419','+966568666399','+966549781111','+966546777511'];
 const MAX_OFFERS=8;
+const MAX_FONT_FILE_SIZE=2.5*1024*1024;
+const PDF_FONT_SPECS={
+  expo:{family:'ExpoArabic',uploadId:'fontUploadExpo',nameId:'fontNameExpo',builtInFile:'ExpoArabic-SemiBold.ttf'},
+  gess:{family:'GESSTwo',uploadId:'fontUploadGess',nameId:'fontNameGess',builtInFile:'GE-SS-Two-Bold.otf'},
+  helveticaBold:{family:'HelveticaBold',uploadId:'fontUploadHelveticaBold',nameId:'fontNameHelveticaBold',builtInFile:'Helvetica-Bold.ttf'},
+  helveticaRounded:{family:'HelveticaRounded',uploadId:'fontUploadHelveticaRounded',nameId:'fontNameHelveticaRounded',builtInFile:'Helvetica-Rounded-Bold.otf'}
+};
+const BUILTIN_FONT_LOADS=['600 16px ExpoArabic','700 16px GESSTwo','700 16px HelveticaBold','700 16px HelveticaRounded'];
 const AUTH_HASH='db031c72ba245b0d6de8febc3797849ada2e764fbd783251f21cd823da263883';
 
 const uid=()=>Math.random().toString(36).slice(2,11)+Date.now().toString(36).slice(-4);
@@ -27,7 +35,7 @@ function defaultData(){
   return {
     draft:{customerName:'',quoteDate:today(),intro:'نسعد بإبلاغك بتفاصيل الحجز كالتالي:',currency:'ريال سعودي',notes:'الأسعار قابلة للتغيير حسب الإمكانية وقت التأكيد.',closing:'يسعدنا خدمتك، ولتأكيد الحجز يرجى التواصل معنا وإرسال بيانات النزلاء.',items:[defaultOffer()]},
     library:[],
-    settings:{companyName:'ينابيع الهدى المتميزة',companyLine:'سكن مطمئن لرحلة مباركة',phones:PHONE_DEFAULT.join('، '),logo:ORIGINAL_LOGO},
+    settings:{companyName:'ينابيع الهدى المتميزة',companyLine:'سكن مطمئن لرحلة مباركة',phones:PHONE_DEFAULT.join('، '),logo:ORIGINAL_LOGO,pdfFonts:{}},
     activeId:''
   };
 }
@@ -47,6 +55,11 @@ function normalize(){
     return {...x,id,title:String(x.title||'عرض محفوظ')};
   });
   app.settings=Object.assign(d.settings,app.settings||{});app.settings.logo=ORIGINAL_LOGO;
+  app.settings.pdfFonts=app.settings.pdfFonts&&typeof app.settings.pdfFonts==='object'?app.settings.pdfFonts:{};
+  Object.keys(PDF_FONT_SPECS).forEach(key=>{
+    const item=app.settings.pdfFonts[key];
+    app.settings.pdfFonts[key]=item&&typeof item==='object'?{name:String(item.name||''),data:String(item.data||'')}:{name:'',data:''};
+  });
   if(!app.settings.companyLine||app.settings.companyLine==='خدمات الفنادق والحجوزات')app.settings.companyLine='سكن مطمئن لرحلة مباركة';
   app.settings.phones=normalizePhones(app.settings.phones||PHONE_DEFAULT.join('، '));
   app.draft.items=Array.isArray(app.draft.items)&&app.draft.items.length?app.draft.items.slice(0,MAX_OFFERS):[defaultOffer()];
@@ -80,6 +93,151 @@ function persist(){
     }
     return false;
   }
+}
+
+
+const loadedPdfFonts={};
+const loadedPdfFontKeys={};
+
+function pdfFontState(){
+  if(!app.settings.pdfFonts||typeof app.settings.pdfFonts!=='object')app.settings.pdfFonts={};
+  Object.keys(PDF_FONT_SPECS).forEach(key=>{
+    if(!app.settings.pdfFonts[key]||typeof app.settings.pdfFonts[key]!=='object')app.settings.pdfFonts[key]={name:'',data:''};
+  });
+  return app.settings.pdfFonts;
+}
+
+async function ensurePdfFonts(force=false){
+  if(!('FontFace' in window)||!document.fonts)return;
+  await Promise.all(BUILTIN_FONT_LOADS.map(font=>document.fonts.load(font).catch(()=>[])));
+  const fonts=pdfFontState();
+  for(const [key,spec] of Object.entries(PDF_FONT_SPECS)){
+    const item=fonts[key]||{};
+    const data=String(item.data||'');
+    if(!data)continue;
+    const cacheKey=`${data.length}:${data.slice(-32)}`;
+    if(!force&&loadedPdfFontKeys[key]===cacheKey)continue;
+    try{
+      if(loadedPdfFonts[key]){
+        try{document.fonts.delete(loadedPdfFonts[key])}catch(_){ }
+      }
+      const face=new FontFace(spec.family,`url(${data})`,{style:'normal',weight:key==='expo'?'400 900':'700'});
+      await face.load();
+      document.fonts.add(face);
+      loadedPdfFonts[key]=face;
+      loadedPdfFontKeys[key]=cacheKey;
+    }catch(error){
+      console.warn(`تعذر تحميل الخط ${spec.family}`,error);
+    }
+  }
+  try{await document.fonts.ready}catch(_){ }
+}
+
+function readFileAsDataUrl(file){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=()=>resolve(String(reader.result||''));
+    reader.onerror=()=>reject(new Error('تعذر قراءة ملف الخط'));
+    reader.readAsDataURL(file);
+  });
+}
+
+function validFontFile(file){
+  if(!file)return false;
+  const name=String(file.name||'').toLowerCase();
+  return /\.(ttf|otf|woff|woff2)$/.test(name)||/^font\//.test(String(file.type||''));
+}
+
+async function saveFontFile(key,file){
+  const spec=PDF_FONT_SPECS[key];
+  if(!spec||!file)return;
+  if(!validFontFile(file)){alert('اختر ملف خط بصيغة TTF أو OTF أو WOFF أو WOFF2.');return}
+  if(file.size>MAX_FONT_FILE_SIZE){alert('حجم ملف الخط كبير. الحد الأقصى 2.5 ميجابايت لكل خط.');return}
+  const fonts=pdfFontState(),old=clone(fonts[key]);
+  try{
+    const data=await readFileAsDataUrl(file);
+    fonts[key]={name:file.name,data};
+    if(!persist())throw new Error('تعذر حفظ الخط داخل المتصفح');
+    await ensurePdfFonts(true);
+    renderSettings();
+    renderPreview();
+    toast(`تم حفظ خط بديل لـ ${spec.family} واستخدامه في PDF`);
+  }catch(error){
+    fonts[key]=old;
+    persist();
+    alert(error.message||'تعذر حفظ ملف الخط');
+  }
+}
+
+async function resetPdfFont(key){
+  const spec=PDF_FONT_SPECS[key];
+  if(!spec)return;
+  const fonts=pdfFontState();
+  fonts[key]={name:'',data:''};
+  if(loadedPdfFonts[key]){
+    try{document.fonts.delete(loadedPdfFonts[key])}catch(_){ }
+    delete loadedPdfFonts[key];
+    delete loadedPdfFontKeys[key];
+  }
+  persist();
+  renderSettings();
+  renderPreview();
+  toast(`تم الرجوع إلى خط ${spec.family} المدمج`);
+}
+
+function bindPdfFontControls(){
+  Object.entries(PDF_FONT_SPECS).forEach(([key,spec])=>{
+    const input=document.getElementById(spec.uploadId);
+    if(input)input.onchange=async e=>{
+      const file=e.target.files&&e.target.files[0];
+      e.target.value='';
+      if(file)await saveFontFile(key,file);
+    };
+  });
+  document.querySelectorAll('[data-reset-font]').forEach(btn=>btn.onclick=()=>resetPdfFont(btn.dataset.resetFont));
+}
+
+function waitForQuoteImages(){
+  const root=document.getElementById('quotePages');
+  if(!root)return Promise.resolve();
+  const images=[...root.querySelectorAll('img')];
+  return Promise.all(images.map(img=>{
+    if(img.complete){
+      return typeof img.decode==='function'?img.decode().catch(()=>{}):Promise.resolve();
+    }
+    return new Promise(resolve=>{
+      const done=()=>resolve();
+      img.addEventListener('load',done,{once:true});
+      img.addEventListener('error',done,{once:true});
+    });
+  }));
+}
+
+async function printQuotePdf(){
+  document.documentElement.classList.add('print-preparing');
+  try{
+    await ensurePdfFonts();
+    await waitForQuoteImages();
+    if(document.fonts)await document.fonts.ready;
+    await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+    window.print();
+  }catch(error){
+    console.error('PDF preparation failed',error);
+    window.print();
+  }finally{
+    setTimeout(()=>document.documentElement.classList.remove('print-preparing'),500);
+  }
+}
+
+function duplicateCurrentOffer(){
+  if(app.draft.items.length>=MAX_OFFERS){toast('الحد الأقصى 8 خيارات');return}
+  const source=app.draft.items[app.draft.items.length-1]||defaultOffer();
+  const copy=clone(source);
+  copy.id=uid();
+  app.draft.items.push(copy);
+  persist();
+  renderAll();
+  toast('تم نسخ الخيار الأخير بكل بياناته');
 }
 
 let saveTimer;
@@ -606,6 +764,12 @@ function renderSettings(){
     phonesInput.dir='ltr';
     phonesInput.value=normalizePhones(app.settings.phones||'');
   }
+  const fonts=pdfFontState();
+  Object.entries(PDF_FONT_SPECS).forEach(([key,spec])=>{
+    const el=document.getElementById(spec.nameId);
+    if(el)el.textContent=fonts[key]?.name||`مدمج داخل المشروع: ${spec.builtInFile}`;
+  });
+  bindPdfFontControls();
 }
 
 function saveSettings(){
@@ -669,6 +833,7 @@ function init(){
   normalize();
   buildLists();
   renderAll();
+  ensurePdfFonts().catch(()=>{});
 
   const addOfferBtn = document.getElementById('addOffer');
   if(addOfferBtn) addOfferBtn.onclick=()=>{
@@ -677,6 +842,9 @@ function init(){
     persist();
     renderAll();
   };
+
+  const copyOfferBtn=document.getElementById('copyOffer');
+  if(copyOfferBtn)copyOfferBtn.onclick=duplicateCurrentOffer;
 
   ['saveQuote','saveQuoteTop'].forEach(id=>{
     const btn=document.getElementById(id);
@@ -690,7 +858,7 @@ function init(){
 
   ['printQuote','printTop'].forEach(id=>{
     const btn=document.getElementById(id);
-    if(btn)btn.onclick=()=>window.print();
+    if(btn)btn.onclick=printQuotePdf;
   });
 
   const copyBtn = document.getElementById('copyText');
