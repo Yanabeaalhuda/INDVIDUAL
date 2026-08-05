@@ -818,16 +818,9 @@ function bindRoot(){
 function saveCurrent(){
   const title=[app.draft.customerName||'عرض عميل',app.draft.items[0]?.hotelName||'',dateLabel(app.draft.quoteDate)].filter(Boolean).join(' - ');
   const now=new Date().toISOString();
-  if(app.activeId){
-    const x=app.library.find(x=>x.id===app.activeId);
-    if(x){x.title=title;x.data=clone(app.draft);x.updatedAt=now}
-    else app.activeId='';
-  }
-  if(!app.activeId){
-    const item={id:uid(),title,data:clone(app.draft),createdAt:now,updatedAt:now};
-    app.library.unshift(item);
-    app.activeId=item.id;
-  }
+  const item={id:uid(),title,data:clone(app.draft),createdAt:now,updatedAt:now};
+  app.library.unshift(item);
+  app.activeId=item.id;
   app.library=app.library.slice(0,250);
   persist();
   renderSaved();
