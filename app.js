@@ -728,7 +728,6 @@ function measurePreviewLayout(q,sets){
     <footer class="quote-footer">
       <div class="phones" dir="ltr">${phoneList().map(p=>`<span class="phone-number" dir="ltr">${esc(p)}</span>`).join('')}</div>
       <div class="company-line">${esc(sets.companyName)} · ${esc(sets.companyLine)}</div>
-      <div class="copyright-line">تم تصميم هذا البرنامج لشركة ينابيع الهدى من قبل حسين الطنطاوي</div>
     </footer>
   </article>`;
   document.body.appendChild(probe);
@@ -812,7 +811,6 @@ function renderPreview(){
       <footer class="quote-footer">
         <div class="phones" dir="ltr">${phoneList().map(p=>`<span class="phone-number" dir="ltr">${esc(p)}</span>`).join('')}</div>
         <div class="company-line">${esc(sets.companyName)} · ${esc(sets.companyLine)}</div>
-        <div class="copyright-line">تم تصميم هذا البرنامج لشركة ينابيع الهدى من قبل حسين الطنطاوي</div>
       </footer>
     </article></div>`;
   }).join('');
