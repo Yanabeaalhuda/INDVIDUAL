@@ -91,6 +91,10 @@ input,select,textarea,button{font-family:'ExpoArabic','HelveticaBold',Arial,sans
 .phones{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;color:#f2d68e;font-weight:700;font-size:13px}
 .phones .phone-number{direction:ltr;unicode-bidi:isolate;display:inline-block}
 .company-line{font-size:11px;margin-top:7px;color:#ecdfe3}
+.copyright-line{font-size:10px;margin-top:4px;color:#ecdfe3;opacity:0.9}
+.app-site-footer{text-align:center;padding:18px 16px 20px;background:linear-gradient(135deg,#4a0617,#6b0d24);color:#ffffff;border-top:4px solid var(--gold);margin-top:24px;font-size:13px;line-height:1.8}
+.footer-tagline{font-family:'GESSTwo','ExpoArabic',Arial,sans-serif;font-weight:700;color:#f4d690;font-size:14px}
+.footer-credits{font-size:12px;color:#ecdfe3;margin-top:4px}
 
 .saved-list{display:grid;gap:9px}
 .saved-item{border:1px solid var(--line);border-radius:12px;padding:11px;background:#fff;display:flex;justify-content:space-between;gap:10px;align-items:center}
@@ -172,7 +176,8 @@ input,select,textarea,button{font-family:'ExpoArabic','HelveticaBold',Arial,sans
   .preview-tools, 
   .mobile-tabs, 
   .toast, 
-  .auth-gate {
+  .auth-gate,
+  .app-site-footer {
     display: none !important;
   }
 
@@ -308,6 +313,24 @@ body.auth-locked .mobile-tabs {
   font-size: 13px;
   margin-top: 10px;
 }
+.auth-remember {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: #583640;
+  cursor: pointer;
+  user-select: none;
+}
+.auth-remember input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  cursor: pointer;
+  accent-color: #6b0d24;
+}
 </style>
 </head>
 <body class="auth-locked">
@@ -316,6 +339,10 @@ body.auth-locked .mobile-tabs {
     <h2>ينابيع الهدى المتميزة</h2>
     <p>أدخل كلمة المرور لفتح البرنامج</p>
     <input id="authPassword" type="password" placeholder="كلمة المرور" autocomplete="current-password" required>
+    <label class="auth-remember">
+      <input id="authRemember" type="checkbox" checked>
+      <span>حفظ كلمة المرور دائماً على هذا الجهاز</span>
+    </label>
     <button class="btn primary" type="submit" style="width:100%">فتح البرنامج</button>
     <div id="authError" class="auth-error"></div>
   </form>
@@ -334,15 +361,19 @@ body.auth-locked .mobile-tabs {
   <div class="panel"><div class="section-head"><div><h3>خيارات الإقامة</h3></div><div class="actions"><button class="btn primary" id="addOffer">+ إضافة خيار</button></div></div><div id="offers"></div></div>
   <div class="panel"><h3>الرسالة والملاحظات</h3><div class="grid two" style="margin-top:12px"><div class="field"><label>ملاحظة الأسعار</label><textarea id="notes"></textarea></div><div class="field"><label>رسالة الختام</label><textarea id="closing"></textarea></div></div><div class="actions" style="margin-top:13px"><button class="btn primary" id="copyText">نسخ رسالة واتساب</button><button class="btn gold" id="saveQuote">حفظ العرض</button><button class="btn outline" id="newQuote">عرض جديد</button></div></div>
   <div class="panel" id="savedPanel"><div class="section-head"><div><h3>العروض المحفوظة</h3></div><div class="actions"><button class="btn outline small" id="exportBackup">حفظ نسخة احتياطية</button><label class="btn light small" for="importBackup">رفع نسخة احتياطية</label><input id="importBackup" type="file" accept="application/json" hidden></div></div><div id="savedList"></div></div>
-  <div class="panel" id="settingsPanel"><h3>إعدادات الشركة</h3><div class="grid two" style="margin-top:12px"><div class="field"><label>اسم الشركة</label><input id="companyName"></div><div class="field"><label>وصف الخدمة</label><input id="companyLine"></div><div class="field" style="grid-column:1/-1"><label>أرقام التواصل (افصل بينها بفاصلة)</label><input id="phones" dir="ltr" inputmode="tel" style="text-align:right;unicode-bidi:plaintext"></div></div><div class="font-settings"><h4>خطوط المعاينة وملف PDF</h4><p class="panel-sub">الخطوط الأصلية مدمجة داخل المشروع وتعمل تلقائيًا على GitHub وفي المعاينة وملف PDF. ويمكن رفع خط بديل على هذا الجهاز عند الحاجة.</p><div class="grid two" style="margin-top:10px"><div class="font-upload-card"><strong>Expo Arabic — النصوص</strong><div class="actions"><label class="btn light small">رفع خط بديل<input id="fontUploadExpo" type="file" accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff,font/woff2" hidden></label><button class="btn outline small" type="button" data-reset-font="expo">الرجوع للمدمج</button></div><div class="font-file-name" id="fontNameExpo">لم يتم رفع ملف</div></div><div class="font-upload-card"><strong>GE SS Two — العناوين</strong><div class="actions"><label class="btn light small">رفع خط بديل<input id="fontUploadGess" type="file" accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff,font/woff2" hidden></label><button class="btn outline small" type="button" data-reset-font="gess">الرجوع للمدمج</button></div><div class="font-file-name" id="fontNameGess">لم يتم رفع ملف</div></div><div class="font-upload-card"><strong>Helvetica Bold — النصوص البديلة</strong><div class="actions"><label class="btn light small">رفع خط بديل<input id="fontUploadHelveticaBold" type="file" accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff,font/woff2" hidden></label><button class="btn outline small" type="button" data-reset-font="helveticaBold">الرجوع للمدمج</button></div><div class="font-file-name" id="fontNameHelveticaBold">لم يتم رفع ملف</div></div><div class="font-upload-card"><strong>Helvetica Rounded — الأرقام والأسعار</strong><div class="actions"><label class="btn light small">رفع خط بديل<input id="fontUploadHelveticaRounded" type="file" accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff,font/woff2" hidden></label><button class="btn outline small" type="button" data-reset-font="helveticaRounded">الرجوع للمدمج</button></div><div class="font-file-name" id="fontNameHelveticaRounded">لم يتم رفع ملف</div></div></div></div><div class="actions" style="margin-top:12px"><button class="btn primary" id="saveSettings">حفظ الإعدادات</button></div></div>
+  <div class="panel" id="settingsPanel"><h3>إعدادات الشركة</h3><div class="grid two" style="margin-top:12px"><div class="field"><label>اسم الشركة</label><input id="companyName"></div><div class="field"><label>وصف الخدمة</label><input id="companyLine"></div><div class="field" style="grid-column:1/-1"><label>أرقام التواصل (افصل بينها بفاصلة)</label><input id="phones" dir="ltr" inputmode="tel" style="text-align:right;unicode-bidi:plaintext"></div></div><div class="font-settings"><h4>خطوط المعاينة وملف PDF</h4><p class="panel-sub">الخطوط الأصلية مدمجة داخل المشروع وتعمل تلقائيًا على GitHub وفي المعاينة وملف PDF. ويمكن رفع خط بديل على هذا الجهاز عند الحاجة.</p><div class="grid two" style="margin-top:10px"><div class="font-upload-card"><strong>Expo Arabic — النصوص</strong><div class="actions"><label class="btn light small">رفع خط بديل<input id="fontUploadExpo" type="file" accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff,font/woff2" hidden></label><button class="btn outline small" type="button" data-reset-font="expo">الرجوع للمدمج</button></div><div class="font-file-name" id="fontNameExpo">لم يتم رفع ملف</div></div><div class="font-upload-card"><strong>GE SS Two — العناوين</strong><div class="actions"><label class="btn light small">رفع خط بديل<input id="fontUploadGess" type="file" accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff,font/woff2" hidden></label><button class="btn outline small" type="button" data-reset-font="gess">الرجوع للمدمج</button></div><div class="font-file-name" id="fontNameGess">لم يتم رفع ملف</div></div><div class="font-upload-card"><strong>Helvetica Bold — النصوص البديلة</strong><div class="actions"><label class="btn light small">رفع خط بديل<input id="fontUploadHelveticaBold" type="file" accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff,font/woff2" hidden></label><button class="btn outline small" type="button" data-reset-font="helveticaBold">الرجوع للمدمج</button></div><div class="font-file-name" id="fontNameHelveticaBold">لم يتم رفع ملف</div></div><div class="font-upload-card"><strong>Helvetica Rounded — الأرقام والأسعار</strong><div class="actions"><label class="btn light small">رفع خط بديل<input id="fontUploadHelveticaRounded" type="file" accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff,font/woff2" hidden></label><button class="btn outline small" type="button" data-reset-font="helveticaRounded">الرجوع للمدمج</button></div><div class="font-file-name" id="fontNameHelveticaRounded">لم يتم رفع ملف</div></div></div></div><div class="actions" style="margin-top:12px"><button class="btn primary" id="saveSettings">حفظ الإعدادات</button><button class="btn danger" id="lockApp" type="button">قفل البرنامج (تسجيل الخروج)</button></div></div>
 </section>
 <section class="column preview-column" id="previewColumn"><div class="panel preview-panel preview-sticky"><div class="preview-tools"><div><h3>معاينة عرض السعر</h3></div><div class="actions"><button class="btn primary" id="downloadPdfQuote">حفظ PDF</button><button class="btn outline" id="printQuote">طباعة</button></div></div><div class="preview-stage"><div id="quotePages"></div></div></div></section>
 </main>
+<footer class="app-site-footer">
+  <div class="footer-tagline">ينابيع الهدى... سكن مطمئن لرحلة مباركة</div>
+  <div class="footer-credits">تم تصميم هذا البرنامج لشركة ينابيع الهدى من قبل حسين الطنطاوي</div>
+</footer>
 <nav class="mobile-tabs"><button class="active" data-mobile-tab="editor">البيانات</button><button data-mobile-tab="preview">المعاينة</button><button data-mobile-tab="saved">المحفوظات</button></nav>
 <div class="toast" id="toast"></div>
 <datalist id="hotelNames"></datalist><datalist id="roomTypes"></datalist><datalist id="mealPlans"></datalist><datalist id="views"></datalist>
 <script src="./vendor/html2canvas.min.js?v=27"></script>
 <script src="./vendor/jspdf.umd.min.js?v=27"></script>
-<script src="./app.js?v=28"></script>
+<script src="./app.js?v=34"></script>
 </body>
 </html>

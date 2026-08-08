@@ -46,6 +46,9 @@ function normalize(){
   const d=defaultData();
   app=app&&typeof app==='object'?app:d;
   app.draft=Object.assign(d.draft,app.draft||{});
+  if(!app.draft.quoteDate||(!app.activeId&&app.draft.quoteDate<today())){
+    app.draft.quoteDate=today();
+  }
   app.library=Array.isArray(app.library)?app.library.slice(0,250):[];
   const libraryIds=new Set();
   app.library=app.library.filter(x=>x&&typeof x==='object'&&x.data&&typeof x.data==='object').map(x=>{
@@ -348,6 +351,28 @@ function duplicateOffer(id){
   toast(`تم نسخ الخيار ${sourceIndex+1} بكل بياناته`);
 }
 
+function moveOfferUp(id){
+  const idx=app.draft.items.findIndex(item=>item.id===id);
+  if(idx<=0)return;
+  const temp=app.draft.items[idx];
+  app.draft.items[idx]=app.draft.items[idx-1];
+  app.draft.items[idx-1]=temp;
+  persist();
+  renderAll();
+  toast(`تم نقل الخيار ${idx+1} للأعلى`);
+}
+
+function moveOfferDown(id){
+  const idx=app.draft.items.findIndex(item=>item.id===id);
+  if(idx<0||idx>=app.draft.items.length-1)return;
+  const temp=app.draft.items[idx];
+  app.draft.items[idx]=app.draft.items[idx+1];
+  app.draft.items[idx+1]=temp;
+  persist();
+  renderAll();
+  toast(`تم نقل الخيار ${idx+1} للأسفل`);
+}
+
 let saveTimer;
 function autoSave(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>{persist();renderPreview()},120)}
 
@@ -440,7 +465,7 @@ function stats(o){
   for(let d=new Date(start);d<end;d.setDate(d.getDate()+1)){
     nights++;
     const day=d.getDay();
-    if(day===5||day===6)weekend++;
+    if(day===4||day===5)weekend++;
     else weekday++;
   }
   let total=o.pricingMode==='weekdayWeekend'?weekday*num(o.weekdayPrice)+weekend*num(o.weekendPrice):o.pricingMode==='total'?num(o.totalPrice):nights*num(o.nightlyPrice);
@@ -465,10 +490,12 @@ function hotelFieldsHtml(o){
 
 function offerHtml(o,i){
   const s=stats(o);
+  const totalItems=app.draft.items.length;
   return`<article class="offer-card" data-id="${o.id}">
     <div class="offer-title">
-      <strong>${app.draft.items.length > 1 ? `الخيار ${i+1}` : `تفاصيل الحجز`}</strong>
+      <strong>${totalItems > 1 ? `الخيار ${i+1}` : `تفاصيل الحجز`}</strong>
       <div class="offer-title-actions">
+        ${totalItems > 1 ? `<button class="btn outline small" type="button" data-move-up="${o.id}" ${i===0?'disabled':''} title="تقديم الخيار للأعلى">▲ أعلى</button><button class="btn outline small" type="button" data-move-down="${o.id}" ${i===totalItems-1?'disabled':''} title="تأخير الخيار للأسفل">▼ أسفل</button>` : ''}
         <button class="btn light small" type="button" data-copy-offer="${o.id}">نسخ الخيار</button>
         <button class="btn danger small" type="button" data-remove="${o.id}">حذف</button>
       </div>
@@ -618,6 +645,8 @@ function renderOffers(){
     });
   });
 
+  wrap.querySelectorAll('[data-move-up]').forEach(btn=>btn.onclick=()=>moveOfferUp(btn.dataset.moveUp));
+  wrap.querySelectorAll('[data-move-down]').forEach(btn=>btn.onclick=()=>moveOfferDown(btn.dataset.moveDown));
   wrap.querySelectorAll('[data-copy-offer]').forEach(btn=>btn.onclick=()=>duplicateOffer(btn.dataset.copyOffer));
 
   wrap.querySelectorAll('[data-remove]').forEach(btn=>btn.onclick=()=>{
@@ -690,6 +719,7 @@ function measurePreviewLayout(q,sets){
     <footer class="quote-footer">
       <div class="phones" dir="ltr">${phoneList().map(p=>`<span class="phone-number" dir="ltr">${esc(p)}</span>`).join('')}</div>
       <div class="company-line">${esc(sets.companyName)} · ${esc(sets.companyLine)}</div>
+      <div class="copyright-line">تم تصميم هذا البرنامج لشركة ينابيع الهدى من قبل حسين الطنطاوي</div>
     </footer>
   </article>`;
   document.body.appendChild(probe);
@@ -773,6 +803,7 @@ function renderPreview(){
       <footer class="quote-footer">
         <div class="phones" dir="ltr">${phoneList().map(p=>`<span class="phone-number" dir="ltr">${esc(p)}</span>`).join('')}</div>
         <div class="company-line">${esc(sets.companyName)} · ${esc(sets.companyLine)}</div>
+        <div class="copyright-line">تم تصميم هذا البرنامج لشركة ينابيع الهدى من قبل حسين الطنطاوي</div>
       </footer>
     </article></div>`;
   }).join('');
@@ -1077,7 +1108,8 @@ function init(){
   const saveSettingsBtn = document.getElementById('saveSettings');
   if(saveSettingsBtn) saveSettingsBtn.onclick=saveSettings;
 
-
+  const lockAppBtn = document.getElementById('lockApp');
+  if(lockAppBtn) lockAppBtn.onclick=lockApp;
 
   updateScale();
   window.addEventListener('resize',updateScale);
@@ -1196,12 +1228,18 @@ function unlockApp(){
   init();
 }
 
+function lockApp(){
+  sessionStorage.removeItem('yanabea_auth_ok');
+  localStorage.removeItem('yanabea_auth_ok');
+  location.reload();
+}
+
 function setupAuth(){
-  if(sessionStorage.getItem('yanabea_auth_ok')==='1'){
+  if(sessionStorage.getItem('yanabea_auth_ok')==='1'||localStorage.getItem('yanabea_auth_ok')==='1'){
     unlockApp();
     return;
   }
-  const form=document.getElementById('authForm'),input=document.getElementById('authPassword'),error=document.getElementById('authError');
+  const form=document.getElementById('authForm'),input=document.getElementById('authPassword'),remember=document.getElementById('authRemember'),error=document.getElementById('authError');
   if(!form||!input)return;
   setTimeout(()=>input.focus(),50);
   form.addEventListener('submit',async e=>{
@@ -1212,6 +1250,11 @@ function setupAuth(){
       const hash = await sha256(val);
       if(hash === AUTH_HASH){
         sessionStorage.setItem('yanabea_auth_ok','1');
+        if(!remember||remember.checked){
+          localStorage.setItem('yanabea_auth_ok','1');
+        }else{
+          localStorage.removeItem('yanabea_auth_ok');
+        }
         unlockApp();
       }else{
         if(error)error.textContent='كلمة المرور غير صحيحة';
