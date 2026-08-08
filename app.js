@@ -78,7 +78,14 @@ function normalize(){
   });
 }
 
-function load(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY))||defaultData()}catch(e){return defaultData()}}
+function load(){
+  try{
+    const data=JSON.parse(localStorage.getItem(STORAGE_KEY))||defaultData();
+    data.draft=defaultData().draft;
+    data.activeId='';
+    return data;
+  }catch(e){return defaultData()}
+}
 
 let storageWarningShown=false;
 function persist(){
@@ -217,6 +224,7 @@ function waitForQuoteImages(){
 }
 
 async function printQuotePdf(){
+  saveCurrent(true);
   document.documentElement.classList.add('print-preparing');
   try{
     await ensurePdfFonts();
@@ -267,6 +275,7 @@ function setPdfDownloadBusy(busy){
 }
 
 async function downloadQuotePdf(){
+  saveCurrent(true);
   if(typeof window.html2canvas!=='function'||!window.jspdf||typeof window.jspdf.jsPDF!=='function'){
     alert('تعذر تحميل أداة إنشاء PDF. أعد تحميل الصفحة ثم حاول مرة أخرى.');
     return;
@@ -846,7 +855,7 @@ function bindRoot(){
   });
 }
 
-function saveCurrent(){
+function saveCurrent(silent=false){
   const title=[app.draft.customerName||'عرض عميل',app.draft.items[0]?.hotelName||'',dateLabel(app.draft.quoteDate)].filter(Boolean).join(' - ');
   const now=new Date().toISOString();
   const item={id:uid(),title,data:clone(app.draft),createdAt:now,updatedAt:now};
@@ -855,7 +864,7 @@ function saveCurrent(){
   app.library=app.library.slice(0,250);
   persist();
   renderSaved();
-  toast('تم حفظ عرض السعر');
+  if(!silent) toast('تم حفظ عرض السعر');
 }
 
 function loadSaved(id){
@@ -909,6 +918,15 @@ function newDraft(){
   toast('تم إنشاء عرض جديد');
 }
 
+function clearDraft(confirmReset=true){
+  if(confirmReset && !confirm('مسح جميع البيانات والبدء بعرض جديد؟')) return;
+  app.draft=defaultData().draft;
+  app.activeId='';
+  persist();
+  renderAll();
+  toast('تم مسح البيانات والبدء بعرض جديد');
+}
+
 function quoteText(){
   const q=app.draft,lines=[`عزيزي العميل / ${q.customerName||'................'}`,q.intro,''];
   q.items.forEach((o,i)=>{
@@ -943,6 +961,7 @@ function quoteText(){
 }
 
 async function copyQuote(){
+  saveCurrent(true);
   const text=quoteText();
   try{await navigator.clipboard.writeText(text)}
   catch(e){
@@ -953,7 +972,7 @@ async function copyQuote(){
     document.execCommand('copy');
     t.remove();
   }
-  toast('تم نسخ الرسالة');
+  toast('تم نسخ الرسالة وحفظ العرض');
 }
 
 function exportBackup(){
@@ -1074,8 +1093,11 @@ function init(){
 
   ['saveQuote','saveQuoteTop'].forEach(id=>{
     const btn=document.getElementById(id);
-    if(btn)btn.onclick=saveCurrent;
+    if(btn)btn.onclick=()=>saveCurrent(false);
   });
+
+  const clearDraftBtn = document.getElementById('clearDraftBtn');
+  if(clearDraftBtn) clearDraftBtn.onclick=()=>clearDraft(true);
 
   ['newQuote','newQuoteTop'].forEach(id=>{
     const btn=document.getElementById(id);
