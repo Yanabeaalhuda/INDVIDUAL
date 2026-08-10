@@ -29,7 +29,7 @@ const dateLabel=v=>{if(!v)return'—';const p=String(v).split('-');return p.leng
 const nightsText=n=>Number(n)===1?'1 ليلة':`${Number(n)||0} ليالٍ`;
 
 function defaultOffer(){
-  return {id:uid(),hotelMode:'list',hotelId:'',hotelName:'',checkIn:today(),checkOut:tomorrow(),roomType:'',mealPlan:'',view:'',pricingMode:'nightly',nightlyPrice:'',weekdayPrice:'',weekendPrice:'',totalPrice:'',extraBed:'',notes:''};
+  return {id:uid(),hotelMode:'list',hotelId:'',hotelName:'',checkIn:today(),checkOut:tomorrow(),roomType:'',mealPlan:'',view:'',pricingMode:'nightly',nightlyPrice:'',weekdayPrice:'',weekendPrice:'',totalPrice:'',extraBed:'',roomCount:'1',notes:''};
 }
 function defaultData(){
   return {
@@ -469,7 +469,7 @@ function applyRate(offer){
 
 function stats(o){
   const start=new Date(`${o.checkIn}T12:00:00`),end=new Date(`${o.checkOut}T12:00:00`);
-  if(!o.checkIn||!o.checkOut||isNaN(start)||isNaN(end)||end<=start)return{nights:0,weekday:0,weekend:0,total:0};
+  if(!o.checkIn||!o.checkOut||isNaN(start)||isNaN(end)||end<=start)return{nights:0,weekday:0,weekend:0,total:0,rooms:Math.max(1,num(o.roomCount)||1)};
   let nights=0,weekday=0,weekend=0;
   for(let d=new Date(start);d<end;d.setDate(d.getDate()+1)){
     nights++;
@@ -477,8 +477,10 @@ function stats(o){
     if(day===4||day===5)weekend++;
     else weekday++;
   }
+  const rooms=Math.max(1,num(o.roomCount)||1);
   let total=o.pricingMode==='weekdayWeekend'?weekday*num(o.weekdayPrice)+weekend*num(o.weekendPrice):o.pricingMode==='total'?num(o.totalPrice):nights*num(o.nightlyPrice);
-  return{nights,weekday,weekend,total};
+  total=total*rooms;
+  return{nights,weekday,weekend,total,rooms};
 }
 
 
@@ -534,9 +536,16 @@ function offerHtml(o,i){
       <div class="field"><label>ملاحظات الخيار</label><input data-key="notes" value="${esc(o.notes)}"></div>
       <div class="field"><label>سعر السرير الإضافي</label><input inputmode="decimal" data-key="extraBed" value="${esc(o.extraBed)}"></div>
       <div class="pricing-fields">${pricingHtml(o)}</div>
+      <div class="field" style="grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="field" style="margin:0">
+          <label>عدد الغرف</label>
+          <input inputmode="numeric" min="1" data-key="roomCount" value="${esc(o.roomCount||'1')}" style="border:2px solid #c8916e;background:#fffaf7">
+        </div>
+        <div></div>
+      </div>
     </div>
-    <div class="summary"><span>${nightsText(s.nights)}</span><span>WEEKDAY: ${s.weekday}</span><span>WEEKEND: ${s.weekend}</span></div>
-    <div class="option-total"><span>إجمالي هذا الخيار</span><b>${money(s.total)} ${esc(app.draft.currency)}</b></div>
+    <div class="summary"><span>${nightsText(s.nights)}</span><span>WEEKDAY: ${s.weekday}</span><span>WEEKEND: ${s.weekend}</span><span style="background:#e7f3e8;color:#2d6b31">الغرف: ${s.rooms}</span></div>
+    <div class="option-total"><span>إجمالي هذا الخيار${s.rooms>1?` (${s.rooms} غرف)`:''}</span><b>${money(s.total)} ${esc(app.draft.currency)}</b></div>
   </article>`;
 }
 
@@ -565,8 +574,11 @@ function updateOfferCardSummary(card,o){
   if(summary[0])summary[0].textContent=nightsText(s.nights);
   if(summary[1])summary[1].textContent=`WEEKDAY: ${s.weekday}`;
   if(summary[2])summary[2].textContent=`WEEKEND: ${s.weekend}`;
+  if(summary[3])summary[3].textContent=`الغرف: ${s.rooms}`;
   const total=card.querySelector('.option-total b');
   if(total)total.textContent=`${money(s.total)} ${app.draft.currency}`;
+  const totalLabel=card.querySelector('.option-total span');
+  if(totalLabel)totalLabel.textContent=`إجمالي هذا الخيار${s.rooms>1?` (${s.rooms} غرف)`:''}`;
 }
 
 function renderOffers(){
@@ -684,8 +696,9 @@ function previewOfferHtml(o,globalIndex,q){
   const st=stats(o);
   const extraBedStr=num(o.extraBed)>0?`<br><small>السرير الإضافي: ${money(o.extraBed)} ${esc(q.currency)}</small>`:'';
   const notesStr=o.notes?`<br><small>${esc(o.notes)}</small>`:'';
+  const roomsLabel=st.rooms>1?`<div class="detail" style="background:#fff8ea;border-color:#e8c97a"><b>عدد الغرف</b><span>${st.rooms}</span></div>`:'';
   return`<section class="preview-offer" data-offer-index="${globalIndex}">
-    <div class="preview-offer-head"><span>${q.items.length>1?`الخيار ${globalIndex+1}`:`تفاصيل الإقامة`}</span><span>${nightsText(st.nights)}</span></div>
+    <div class="preview-offer-head"><span>${q.items.length>1?`الخيار ${globalIndex+1}`:`تفاصيل الإقامة`}</span><span>${nightsText(st.nights)}${st.rooms>1?` · ${st.rooms} غرف`:''}</span></div>
     <div class="preview-offer-body">
       <div class="hotel-name">${esc(o.hotelName||'اسم الفندق')}</div>
       <div class="detail-grid">
@@ -695,9 +708,10 @@ function previewOfferHtml(o,globalIndex,q){
         <div class="detail"><b>الوجبة</b><span>${esc(o.mealPlan||'—')}</span></div>
         <div class="detail"><b>الإطلالة</b><span>${esc(o.view||'—')}</span></div>
         <div class="detail"><b>توزيع الليالي</b><span>${st.weekday} وسط الأسبوع · ${st.weekend} ويك إند</span></div>
+        ${roomsLabel}
       </div>
       <div class="price-line">
-        <span>${previewPrice(o,st)}${extraBedStr}${notesStr}</span>
+        <span>${previewPrice(o,st)}${st.rooms>1?`<br><small>× ${st.rooms} غرف</small>`:''}${extraBedStr}${notesStr}</span>
         <b>${money(st.total)} ${esc(q.currency)}</b>
       </div>
     </div>
@@ -937,7 +951,8 @@ function quoteText(){
       `نوع الغرفة: ${o.roomType||'—'}`,
       `نوع الوجبة: ${o.mealPlan||'—'}`,
       `الإطلالة: ${o.view||'—'}`,
-      `عدد الليالي: ${nightsText(s.nights)}`
+      `عدد الليالي: ${nightsText(s.nights)}`,
+      `عدد الغرف: ${s.rooms}`
     );
     if(o.pricingMode==='weekdayWeekend')
       lines.push(`سعر وسط الأسبوع: ${money(o.weekdayPrice)} ${q.currency} × ${s.weekday}`,`سعر نهاية الأسبوع: ${money(o.weekendPrice)} ${q.currency} × ${s.weekend}`);
@@ -946,10 +961,13 @@ function quoteText(){
     else
       lines.push(`سعر الليلة: ${money(o.nightlyPrice)} ${q.currency}`);
     
+    if(s.rooms>1)
+      lines.push(`× ${s.rooms} غرف`);
+    
     if(num(o.extraBed)>0)
       lines.push(`سعر السرير الإضافي: ${money(o.extraBed)} ${q.currency}`);
     
-    lines.push(`الإجمالي: ${money(s.total)} ${q.currency}`);
+    lines.push(`الإجمالي: ${money(s.total)} ${q.currency}${s.rooms>1?` (${s.rooms} غرف)`:''}`);
     if(o.notes)
       lines.push(`ملاحظات: ${o.notes}`);
     lines.push('');
