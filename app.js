@@ -807,11 +807,21 @@ function outerHeight(el){
   return el.getBoundingClientRect().height+(parseFloat(style.marginTop)||0)+(parseFloat(style.marginBottom)||0);
 }
 
-function measurePreviewLayout(q,sets){
+const DENSITY_MODES=['spacious','normal','compact','dense','micro'];
+
+function getInitialDensity(count){
+  if(count<=1)return'spacious';
+  if(count===2)return'normal';
+  if(count===3)return'compact';
+  if(count<=5)return'dense';
+  return'micro';
+}
+
+function measurePreviewLayout(q,sets,density){
   const probe=document.createElement('div');
   probe.className='quote-measure-root';
   probe.setAttribute('aria-hidden','true');
-  probe.innerHTML=`<article class="quote-page quote-measure-page">
+  probe.innerHTML=`<article class="quote-page quote-measure-page" data-density="${density}">
     <header class="quote-header">
       <img src="${window.ORIGINAL_LOGO}" alt="">
       <div class="quote-title"><h1>عرض سعر للعميل</h1><p>تفاصيل الإقامة والحجز المقترح</p></div>
@@ -843,8 +853,8 @@ function measurePreviewLayout(q,sets){
   return{contentLimit,greetingHeight,offerHeights,closingHeight};
 }
 
-function paginatePreviewItems(q,sets){
-  const measured=measurePreviewLayout(q,sets);
+function doPaginateWithDensity(q,sets,density){
+  const measured=measurePreviewLayout(q,sets,density);
   const pages=[];
   const heights=[];
   const newPage=()=>{pages.push([]);heights.push(measured.greetingHeight)};
@@ -886,14 +896,33 @@ function paginatePreviewItems(q,sets){
   return pages;
 }
 
+function paginatePreviewItems(q,sets){
+  const count=(q.items||[]).length;
+  const initialDensity=getInitialDensity(count);
+  const startIdx=DENSITY_MODES.indexOf(initialDensity);
+
+  let chosenPages=[];
+  let chosenDensity=initialDensity;
+
+  for(let i=startIdx;i<DENSITY_MODES.length;i++){
+    chosenDensity=DENSITY_MODES[i];
+    chosenPages=doPaginateWithDensity(q,sets,chosenDensity);
+    if(chosenPages.length<=2)break; // Always fit within max 2 pages!
+  }
+
+  return{chunks:chosenPages,density:chosenDensity};
+}
+
 function renderPreview(){
-  const q=app.draft,sets=app.settings,chunks=paginatePreviewItems(q,sets);
+  const q=app.draft,sets=app.settings;
+  const {chunks,density}=paginatePreviewItems(q,sets);
   const totalPages=chunks.length;
+
   const pages=chunks.map((chunk,pageIndex)=>{
     const items=chunk.map(({offer,index})=>previewOfferHtml(offer,index,q)).join('');
     const finalBlock=pageIndex===totalPages-1?previewClosingHtml(q):'';
     return`<div class="quote-page-wrapper">
-    <article class="quote-page">
+    <article class="quote-page" data-density="${density}">
       <header class="quote-header">
         <img src="${window.ORIGINAL_LOGO}" alt="شعار الشركة">
         <div class="quote-title"><h1>عرض سعر للعميل</h1><p>تفاصيل الإقامة والحجز المقترح</p></div>
@@ -914,6 +943,18 @@ function renderPreview(){
 
   const pagesContainer = document.getElementById('quotePages');
   if(pagesContainer) pagesContainer.innerHTML=pages;
+
+  const densityBadge=document.getElementById('densityBadge');
+  if(densityBadge){
+    const densityNames={
+      spacious:'خط كبير (خيار واحد)',
+      normal:'خط قياسي',
+      compact:'خط مدمج',
+      dense:'خط مكثف',
+      micro:'خط دقيق'
+    };
+    densityBadge.textContent=`${totalPages} ${totalPages>1?'صفحات':'صفحة'} (${densityNames[density]||density})`;
+  }
   
   const logoEl = document.getElementById('brandLogo');
   if(logoEl) logoEl.src=sets.logo||ORIGINAL_LOGO;

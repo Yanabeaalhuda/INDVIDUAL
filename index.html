@@ -130,6 +130,104 @@ input,select,textarea,button{font-family:'ExpoArabic','HelveticaBold',Arial,sans
 .quote-page .quote-title h1,.quote-page .quote-title p,.quote-page .greeting b,.quote-page .preview-offer-head,.quote-page .hotel-name,.quote-page .detail b,.quote-page .closing b{font-family:'GESSTwo','ExpoArabic',Tahoma,Arial,sans-serif;font-synthesis:none}
 .quote-page .price-line b,.quote-page .quote-date,.quote-page .phones{font-family:'HelveticaRounded','HelveticaBold','ExpoArabic',Tahoma,Arial,sans-serif;font-synthesis:none}
 
+/* Dynamic Density Modes for 1 to 8 offers (Max 2 Pages) */
+/* SPACIOUS (1 Offer) */
+.quote-page[data-density="spacious"] .quote-header { height:140px; padding:22px 28px; grid-template-columns:98px 1fr 140px; }
+.quote-page[data-density="spacious"] .quote-header img { width:98px; height:98px; }
+.quote-page[data-density="spacious"] .quote-title h1 { font-size:32px; }
+.quote-page[data-density="spacious"] .quote-title p { font-size:16px; margin-top:8px; }
+.quote-page[data-density="spacious"] .quote-body { padding:32px 38px 125px; }
+.quote-page[data-density="spacious"] .greeting { font-size:15.5px; padding:15px 18px; line-height:2.0; margin-bottom:20px; }
+.quote-page[data-density="spacious"] .preview-offer { margin-bottom:20px; border-radius:18px; }
+.quote-page[data-density="spacious"] .preview-offer-head { padding:13px 18px; font-size:16px; }
+.quote-page[data-density="spacious"] .preview-offer-body { padding:18px 20px; }
+.quote-page[data-density="spacious"] .hotel-name { font-size:23px; margin-bottom:12px; }
+.quote-page[data-density="spacious"] .detail-grid { gap:10px; }
+.quote-page[data-density="spacious"] .detail { padding:9px; }
+.quote-page[data-density="spacious"] .detail b { font-size:11px; margin-bottom:4px; }
+.quote-page[data-density="spacious"] .detail span { font-size:13.5px; }
+.quote-page[data-density="spacious"] .price-line { margin-top:14px; padding-top:12px; font-size:14px; }
+.quote-page[data-density="spacious"] .price-line b { font-size:21px; }
+.quote-page[data-density="spacious"] .closing { padding:15px 18px; font-size:14px; line-height:2.0; }
+
+/* NORMAL (2 Offers) */
+.quote-page[data-density="normal"] .quote-header { height:132px; padding:20px 24px; }
+.quote-page[data-density="normal"] .quote-header img { width:92px; height:92px; }
+.quote-page[data-density="normal"] .quote-title h1 { font-size:30px; }
+.quote-page[data-density="normal"] .quote-body { padding:26px 34px 125px; }
+.quote-page[data-density="normal"] .greeting { font-size:14px; padding:13px 16px; line-height:1.9; margin-bottom:16px; }
+.quote-page[data-density="normal"] .preview-offer { margin-bottom:14px; border-radius:16px; }
+.quote-page[data-density="normal"] .preview-offer-head { padding:11px 16px; font-size:14px; }
+.quote-page[data-density="normal"] .preview-offer-body { padding:14px 16px; }
+.quote-page[data-density="normal"] .hotel-name { font-size:20px; margin-bottom:10px; }
+.quote-page[data-density="normal"] .detail-grid { gap:8px; }
+.quote-page[data-density="normal"] .detail { padding:8px; }
+.quote-page[data-density="normal"] .detail b { font-size:10px; }
+.quote-page[data-density="normal"] .detail span { font-size:12.5px; }
+.quote-page[data-density="normal"] .price-line { margin-top:10px; padding-top:10px; font-size:13px; }
+.quote-page[data-density="normal"] .price-line b { font-size:18px; }
+.quote-page[data-density="normal"] .closing { padding:13px 15px; font-size:13px; line-height:1.9; }
+
+/* COMPACT (3 Offers) */
+.quote-page[data-density="compact"] .quote-header { height:116px; padding:14px 20px; grid-template-columns:76px 1fr 130px; }
+.quote-page[data-density="compact"] .quote-header img { width:76px; height:76px; }
+.quote-page[data-density="compact"] .quote-title h1 { font-size:25px; }
+.quote-page[data-density="compact"] .quote-title p { font-size:13.5px; margin-top:4px; }
+.quote-page[data-density="compact"] .quote-body { padding:18px 26px 115px; }
+.quote-page[data-density="compact"] .greeting { font-size:12.5px; padding:9px 13px; line-height:1.7; margin-bottom:12px; }
+.quote-page[data-density="compact"] .preview-offer { margin-bottom:10px; border-radius:13px; }
+.quote-page[data-density="compact"] .preview-offer-head { padding:8px 13px; font-size:13px; }
+.quote-page[data-density="compact"] .preview-offer-body { padding:10px 13px; }
+.quote-page[data-density="compact"] .hotel-name { font-size:17.5px; margin-bottom:6px; }
+.quote-page[data-density="compact"] .detail-grid { gap:6px; grid-template-columns:repeat(3,1fr); }
+.quote-page[data-density="compact"] .detail { padding:6px; }
+.quote-page[data-density="compact"] .detail b { font-size:9.5px; margin-bottom:2px; }
+.quote-page[data-density="compact"] .detail span { font-size:11.5px; }
+.quote-page[data-density="compact"] .price-line { margin-top:7px; padding-top:7px; font-size:12px; }
+.quote-page[data-density="compact"] .price-line b { font-size:16px; }
+.quote-page[data-density="compact"] .closing { padding:9px 12px; font-size:12px; line-height:1.7; }
+.quote-page[data-density="compact"] .grand-total-block { margin-top:9px; }
+
+/* DENSE (4-5 Offers) */
+.quote-page[data-density="dense"] .quote-header { height:100px; padding:10px 18px; grid-template-columns:64px 1fr 120px; }
+.quote-page[data-density="dense"] .quote-header img { width:64px; height:64px; }
+.quote-page[data-density="dense"] .quote-title h1 { font-size:22px; }
+.quote-page[data-density="dense"] .quote-title p { font-size:12px; margin-top:2px; }
+.quote-page[data-density="dense"] .quote-body { padding:12px 20px 110px; }
+.quote-page[data-density="dense"] .greeting { font-size:11.5px; padding:7px 11px; line-height:1.5; margin-bottom:8px; }
+.quote-page[data-density="dense"] .preview-offer { margin-bottom:7px; border-radius:11px; }
+.quote-page[data-density="dense"] .preview-offer-head { padding:6px 11px; font-size:12px; }
+.quote-page[data-density="dense"] .preview-offer-body { padding:8px 11px; }
+.quote-page[data-density="dense"] .hotel-name { font-size:15px; margin-bottom:4px; }
+.quote-page[data-density="dense"] .detail-grid { gap:4px; grid-template-columns:repeat(4,1fr); }
+.quote-page[data-density="dense"] .detail { padding:4px 6px; }
+.quote-page[data-density="dense"] .detail b { font-size:8.5px; margin-bottom:1px; }
+.quote-page[data-density="dense"] .detail span { font-size:10.5px; }
+.quote-page[data-density="dense"] .price-line { margin-top:5px; padding-top:5px; font-size:11px; }
+.quote-page[data-density="dense"] .price-line b { font-size:14.5px; }
+.quote-page[data-density="dense"] .closing { padding:7px 10px; font-size:11px; line-height:1.5; }
+.quote-page[data-density="dense"] .grand-total-block { margin-top:6px; }
+
+/* MICRO (6-8 Offers) */
+.quote-page[data-density="micro"] .quote-header { height:88px; padding:8px 14px; grid-template-columns:54px 1fr 110px; }
+.quote-page[data-density="micro"] .quote-header img { width:54px; height:54px; }
+.quote-page[data-density="micro"] .quote-title h1 { font-size:19px; }
+.quote-page[data-density="micro"] .quote-title p { font-size:11px; margin-top:1px; }
+.quote-page[data-density="micro"] .quote-body { padding:8px 16px 100px; }
+.quote-page[data-density="micro"] .greeting { font-size:10.5px; padding:5px 9px; line-height:1.4; margin-bottom:5px; }
+.quote-page[data-density="micro"] .preview-offer { margin-bottom:5px; border-radius:9px; }
+.quote-page[data-density="micro"] .preview-offer-head { padding:4px 9px; font-size:11px; }
+.quote-page[data-density="micro"] .preview-offer-body { padding:6px 9px; }
+.quote-page[data-density="micro"] .hotel-name { font-size:13.5px; margin-bottom:3px; }
+.quote-page[data-density="micro"] .detail-grid { gap:3px; grid-template-columns:repeat(4,1fr); }
+.quote-page[data-density="micro"] .detail { padding:3px 5px; }
+.quote-page[data-density="micro"] .detail b { font-size:8px; margin-bottom:1px; }
+.quote-page[data-density="micro"] .detail span { font-size:9.5px; }
+.quote-page[data-density="micro"] .price-line { margin-top:3px; padding-top:3px; font-size:10px; }
+.quote-page[data-density="micro"] .price-line b { font-size:13px; }
+.quote-page[data-density="micro"] .closing { padding:5px 8px; font-size:10px; line-height:1.4; }
+.quote-page[data-density="micro"] .grand-total-block { margin-top:4px; }
+
 .quote-measure-root{position:fixed;top:0;left:-10000px;width:794px;height:1123px;visibility:hidden;pointer-events:none;overflow:hidden;z-index:-1}
 .quote-measure-root .quote-page{transform:none!important;box-shadow:none!important}
 .font-settings{margin-top:16px;padding-top:15px;border-top:1px solid var(--line)}
@@ -421,7 +519,7 @@ body.auth-locked .mobile-tabs {
   </div>
   <div class="panel" id="settingsPanel"><h3>إعدادات الشركة</h3><div class="grid two" style="margin-top:12px"><div class="field"><label>اسم الشركة</label><input id="companyName"></div><div class="field"><label>وصف الخدمة</label><input id="companyLine"></div><div class="field" style="grid-column:1/-1"><label>أرقام التواصل (افصل بينها بفاصلة)</label><input id="phones" dir="ltr" inputmode="tel" style="text-align:right;unicode-bidi:plaintext"></div></div><div class="font-settings"><h4>خطوط المعاينة وملف PDF</h4><p class="panel-sub">الخطوط الأصلية مدمجة داخل المشروع وتعمل تلقائيًا على GitHub وفي المعاينة وملف PDF. ويمكن رفع خط بديل على هذا الجهاز عند الحاجة.</p><div class="grid two" style="margin-top:10px"><div class="font-upload-card"><strong>Expo Arabic — النصوص</strong><div class="actions"><label class="btn light small">رفع خط بديل<input id="fontUploadExpo" type="file" accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff,font/woff2" hidden></label><button class="btn outline small" type="button" data-reset-font="expo">الرجوع للمدمج</button></div><div class="font-file-name" id="fontNameExpo">لم يتم رفع ملف</div></div><div class="font-upload-card"><strong>GE SS Two — العناوين</strong><div class="actions"><label class="btn light small">رفع خط بديل<input id="fontUploadGess" type="file" accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff,font/woff2" hidden></label><button class="btn outline small" type="button" data-reset-font="gess">الرجوع للمدمج</button></div><div class="font-file-name" id="fontNameGess">لم يتم رفع ملف</div></div><div class="font-upload-card"><strong>Helvetica Bold — النصوص البديلة</strong><div class="actions"><label class="btn light small">رفع خط بديل<input id="fontUploadHelveticaBold" type="file" accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff,font/woff2" hidden></label><button class="btn outline small" type="button" data-reset-font="helveticaBold">الرجوع للمدمج</button></div><div class="font-file-name" id="fontNameHelveticaBold">لم يتم رفع ملف</div></div><div class="font-upload-card"><strong>Helvetica Rounded — الأرقام والأسعار</strong><div class="actions"><label class="btn light small">رفع خط بديل<input id="fontUploadHelveticaRounded" type="file" accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff,font/woff2" hidden></label><button class="btn outline small" type="button" data-reset-font="helveticaRounded">الرجوع للمدمج</button></div><div class="font-file-name" id="fontNameHelveticaRounded">لم يتم رفع ملف</div></div></div></div><div class="actions" style="margin-top:12px"><button class="btn primary" id="saveSettings">حفظ الإعدادات</button><button class="btn danger" id="lockApp" type="button">قفل البرنامج (تسجيل الخروج)</button></div></div>
 </section>
-<section class="column preview-column" id="previewColumn"><div class="panel preview-panel preview-sticky"><div class="preview-tools"><div><h3>معاينة عرض السعر</h3></div><div class="actions"><button class="btn primary" id="downloadPdfQuote">حفظ PDF</button><button class="btn outline" id="printQuote">طباعة</button></div></div><div class="preview-stage"><div id="quotePages"></div></div></div></section>
+<section class="column preview-column" id="previewColumn"><div class="panel preview-panel preview-sticky"><div class="preview-tools"><div style="display:flex;align-items:center;gap:10px"><h3 style="margin:0">معاينة عرض السعر</h3><span id="densityBadge" style="font-size:11px;background:#fff8ea;border:1px solid #dfb667;color:#6a4508;border-radius:999px;padding:3px 10px;font-weight:700">1 صفحة</span></div><div class="actions"><button class="btn primary" id="downloadPdfQuote">حفظ PDF</button><button class="btn outline" id="printQuote">طباعة</button></div></div><div class="preview-stage"><div id="quotePages"></div></div></div></section>
 </main>
 <footer class="app-site-footer">
   <div class="footer-tagline">ينابيع الهدى... سكن مطمئن لرحلة مباركة</div>
@@ -432,6 +530,6 @@ body.auth-locked .mobile-tabs {
 <datalist id="hotelNames"></datalist><datalist id="roomTypes"></datalist><datalist id="mealPlans"></datalist><datalist id="views"></datalist>
 <script src="./vendor/html2canvas.min.js?v=27"></script>
 <script src="./vendor/jspdf.umd.min.js?v=27"></script>
-<script src="./app.js?v=38"></script>
+<script src="./app.js?v=39"></script>
 </body>
 </html>
