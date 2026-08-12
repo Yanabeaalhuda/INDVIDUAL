@@ -33,7 +33,7 @@ function defaultOffer(){
 }
 function defaultData(){
   return {
-    draft:{customerName:'',quoteDate:today(),intro:'نسعد بإبلاغك بتفاصيل الحجز كالتالي:',currency:'ريال سعودي',notes:'الأسعار قابلة للتغيير حسب الإمكانية وقت التأكيد.',closing:'يسعدنا خدمتك، ولتأكيد الحجز يرجى التواصل معنا وإرسال بيانات النزلاء.',items:[defaultOffer()]},
+    draft:{customerName:'',quoteDate:today(),intro:'نسعد بإبلاغك بتفاصيل الحجز كالتالي:',currency:'ريال سعودي',notes:'الأسعار قابلة للتغيير حسب الإمكانية وقت التأكيد.',closing:'يسعدنا خدمتك، ولتأكيد الحجز يرجى التواصل معنا وإرسال بيانات النزلاء.',items:[defaultOffer()],showGrandTotal:false},
     library:[],
     settings:{companyName:'ينابيع الهدى المتميزة',companyLine:'سكن مطمئن لرحلة مباركة',phones:PHONE_DEFAULT.join('، '),logo:ORIGINAL_LOGO,pdfFonts:{}},
     activeId:''
@@ -702,6 +702,39 @@ function previewPrice(o,s){
   return`سعر الليلة: ${money(o.nightlyPrice)} ${esc(app.draft.currency)}`;
 }
 
+function grandTotalHtml(q){
+  if(!q.showGrandTotal)return'';
+  const items=q.items||[];
+  // sum total price across all items
+  const grandTotal=items.reduce((sum,o)=>sum+stats(o).total,0);
+  // total room count
+  const totalRooms=items.reduce((sum,o)=>sum+Math.max(1,num(o.roomCount)||1),0);
+  // group by roomType label
+  const roomGroups={};
+  items.forEach(o=>{
+    const roomCount=Math.max(1,num(o.roomCount)||1);
+    const label=o.roomType&&o.roomType.trim()?o.roomType.trim():'غرفة';
+    roomGroups[label]=(roomGroups[label]||0)+roomCount;
+  });
+  const breakdownParts=Object.entries(roomGroups).map(([type,count])=>`${count} ${esc(type)}`).join(' + ');
+  return`<div class="grand-total-block" style="margin-top:14px;border:2.5px solid #dfb667;border-radius:14px;overflow:hidden;break-inside:avoid">
+    <div style="background:linear-gradient(130deg,#4a0617,#6b0d24);color:#f4d690;padding:10px 16px;font-family:'GESSTwo','ExpoArabic',Tahoma,Arial,sans-serif;font-weight:700;font-size:14px;display:flex;justify-content:space-between;align-items:center">
+      <span>الإجمالي الكلي</span>
+      <span style="font-size:11px;opacity:0.85">جميع الخيارات</span>
+    </div>
+    <div style="padding:12px 16px;background:#fffdf9">
+      <div style="margin-bottom:8px;font-size:13px;color:#583640">
+        <b>العدد الإجمالي للغرف:</b> ${totalRooms} غرفة
+      </div>
+      <div style="margin-bottom:10px;font-size:12px;color:#7c636b;padding:7px 10px;background:#f7edf0;border-radius:8px">${breakdownParts}</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;border-top:2px solid #dfb667;padding-top:10px">
+        <span style="font-size:13px;color:#583640;font-weight:700">الإجمالي الكلي لجميع الخيارات</span>
+        <span style="font-family:'HelveticaRounded','HelveticaBold','ExpoArabic',Tahoma,Arial,sans-serif;font-size:20px;font-weight:700;color:#6b0d24">${money(grandTotal)} ${esc(q.currency)}</span>
+      </div>
+    </div>
+  </div>`;
+}
+
 function previewGreetingHtml(q){
   return`<div class="greeting">عزيزي العميل / <b>${esc(q.customerName||'اسم العميل')}</b><br>${esc(q.intro)}</div>`;
 }
@@ -712,6 +745,7 @@ function previewClosingHtml(q){
 
 function previewOfferHtml(o,globalIndex,q){
   const st=stats(o);
+  const isLast=globalIndex===q.items.length-1;
   const extraBedStr=num(o.extraBed)>0?`<br><small>السرير الإضافي: ${money(o.extraBed)} ${esc(q.currency)}</small>`:'';
   const notesStr=o.notes?`<br><small>${esc(o.notes)}</small>`:'';
   const roomsLabel=st.rooms>1?`<div class="detail" style="background:#fff8ea;border-color:#e8c97a"><b>عدد الغرف</b><span>${st.rooms}</span></div>`:'';
@@ -721,6 +755,7 @@ function previewOfferHtml(o,globalIndex,q){
         <b style="font-size:14px;color:#8a6f77">${money(st.totalPerRoom)} ${esc(q.currency)}</b>
       </div>`:'';
   const totalLineStyle=st.rooms>1?'border-top:2px solid var(--gold);padding-top:8px;margin-top:4px;':'';
+  const grandTotalSection=isLast?grandTotalHtml(q):'';
   return`<section class="preview-offer" data-offer-index="${globalIndex}">
     <div class="preview-offer-head"><span>${q.items.length>1?`الخيار ${globalIndex+1}`:`تفاصيل الإقامة`}</span><span>${nightsText(st.nights)}${st.rooms>1?` · ${st.rooms} غرف`:''}</span></div>
     <div class="preview-offer-body">
@@ -740,6 +775,7 @@ function previewOfferHtml(o,globalIndex,q){
         <b>${money(st.total)} ${esc(q.currency)}</b>
       </div>
     </div>
+    ${grandTotalSection}
   </section>`;
 }
 
@@ -1092,6 +1128,9 @@ function renderAll(){
   renderPreview();
   renderSaved();
   renderSettings();
+  // Sync grand total checkbox state with current draft
+  const _gtCb=document.getElementById('grandTotalToggle');
+  if(_gtCb)_gtCb.checked=!!(app.draft.showGrandTotal);
 }
 
 
@@ -1134,6 +1173,19 @@ function init(){
     persist();
     renderAll();
   };
+
+  // Grand total toggle checkbox
+  function syncGrandTotalCheckbox(){
+    const cb=document.getElementById('grandTotalToggle');
+    if(cb)cb.checked=!!(app.draft.showGrandTotal);
+  }
+  syncGrandTotalCheckbox();
+  const grandTotalCb=document.getElementById('grandTotalToggle');
+  if(grandTotalCb)grandTotalCb.addEventListener('change',()=>{
+    app.draft.showGrandTotal=grandTotalCb.checked;
+    persist();
+    renderPreview();
+  });
 
   ['saveQuote','saveQuoteTop'].forEach(id=>{
     const btn=document.getElementById(id);
