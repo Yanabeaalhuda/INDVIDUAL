@@ -104,6 +104,18 @@ input,select,textarea,button{font-family:'ExpoArabic','HelveticaBold',Arial,sans
 .toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,120px);background:#27131a;color:#fff;border-radius:12px;padding:11px 16px;opacity:0;transition:.25s;z-index:200;box-shadow:0 10px 30px rgba(0,0,0,.24)}.toast.show{transform:translate(-50%,0);opacity:1}
 .mobile-tabs{display:none}
 
+.backup-card{margin-top:14px;border:1.5px dashed #c9a9b5;border-radius:14px;padding:14px 16px;background:linear-gradient(135deg,#fffdf9,#fef8f3)}
+.backup-card-title{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.backup-card-title h4{margin:0;color:var(--burg);font-size:13px;font-family:'GESSTwo','ExpoArabic',Arial,sans-serif}
+.backup-card-desc{font-size:11px;color:var(--muted);margin-bottom:12px;line-height:1.6}
+.backup-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.backup-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:12px 10px;border-radius:12px;cursor:pointer;transition:all .18s;border:0;font-family:'ExpoArabic','HelveticaBold',Arial,sans-serif;font-size:12px;font-weight:700;text-align:center;line-height:1.4}
+.backup-btn-icon{font-size:20px;line-height:1}
+.backup-btn.export-btn{background:linear-gradient(135deg,#5b091d,#7d1531);color:#fff;box-shadow:0 4px 14px rgba(107,13,36,.22)}
+.backup-btn.export-btn:hover{background:linear-gradient(135deg,#7d1531,#9c1e42);box-shadow:0 6px 18px rgba(107,13,36,.3);transform:translateY(-1px)}
+.backup-btn.import-btn{background:#fff;border:1.5px solid #c9a9b5;color:var(--burg)}
+.backup-btn.import-btn:hover{background:#fef0f4;border-color:var(--burg);transform:translateY(-1px)}
+
 
 .quote-page{font-family:'ExpoArabic','HelveticaBold',Tahoma,Arial,sans-serif;font-synthesis:none}
 .quote-page .quote-title h1,.quote-page .quote-title p,.quote-page .greeting b,.quote-page .preview-offer-head,.quote-page .hotel-name,.quote-page .detail b,.quote-page .closing b{font-family:'GESSTwo','ExpoArabic',Tahoma,Arial,sans-serif;font-synthesis:none}
@@ -358,9 +370,30 @@ body.auth-locked .mobile-tabs {
       <div class="field" style="grid-column:1/-1"><label>رسالة المقدمة</label><input id="intro"></div>
     </div>
   </div>
-  <div class="panel"><div class="section-head"><div><h3>خيارات الإقامة</h3></div><div class="actions"><button class="btn primary" id="addOffer">+ إضافة خيار</button></div></div><div id="offers"></div></div>
+  <div class="panel"><div class="section-head"><div><h3>خيارات الإقامة</h3></div><div class="actions"><label id="grandTotalToggleLabel" style="display:inline-flex;align-items:center;gap:7px;cursor:pointer;background:#fff8e5;border:1px solid #e3c982;color:#6a4508;border-radius:999px;padding:7px 12px;font-size:12px;font-weight:700;user-select:none" title="عند التفعيل يظهر في المعاينة وملف PDF مجموع كل الغرف والإجمالي الكلي"><input type="checkbox" id="grandTotalToggle" style="width:15px;height:15px;accent-color:#6b0d24;cursor:pointer;margin:0">الإجمالي الكلي</label><button class="btn primary" id="addOffer">+ إضافة خيار</button></div></div><div id="offers"></div></div>
   <div class="panel"><h3>الرسالة والملاحظات</h3><div class="grid two" style="margin-top:12px"><div class="field"><label>ملاحظة الأسعار</label><textarea id="notes"></textarea></div><div class="field"><label>رسالة الختام</label><textarea id="closing"></textarea></div></div><div class="actions" style="margin-top:13px"><button class="btn primary" id="copyText">نسخ رسالة واتساب</button><button class="btn gold" id="saveQuote">حفظ العرض</button><button class="btn outline" id="newQuote">عرض جديد</button></div></div>
-  <div class="panel" id="savedPanel"><div class="section-head"><div><h3>العروض المحفوظة</h3></div><div class="actions"><button class="btn outline small" id="exportBackup">حفظ نسخة احتياطية</button><label class="btn light small" for="importBackup">رفع نسخة احتياطية</label><input id="importBackup" type="file" accept="application/json" hidden></div></div><div id="savedList"></div></div>
+  <div class="panel" id="savedPanel"><div class="section-head"><div><h3>العروض المحفوظة</h3></div></div><div id="savedList"></div>
+    <div class="backup-card">
+      <div class="backup-card-title">
+        <span style="font-size:18px">💾</span>
+        <h4>حفظ واستعادة العروض</h4>
+      </div>
+      <p class="backup-card-desc">يمكنك تنزيل جميع العروض المحفوظة كملف JSON على جهازك، تحتياطًا أو للنقل بين الأجهزة. وعند الحاجة يمكنك رفع الملف واستعادة كل العروض دفعة واحدة.</p>
+      <div class="backup-actions">
+        <button class="backup-btn export-btn" id="exportBackup" type="button">
+          <span class="backup-btn-icon">⬇️</span>
+          <span>تنزيل العروض</span>
+          <span style="font-size:10px;opacity:.85;font-weight:400">حفظ نسخة احتياطية على الجهاز</span>
+        </button>
+        <label class="backup-btn import-btn" for="importBackup">
+          <span class="backup-btn-icon">⬆️</span>
+          <span>استعادة العروض</span>
+          <span style="font-size:10px;opacity:.85;font-weight:400">رفع ملف النسخة الاحتياطية</span>
+          <input id="importBackup" type="file" accept="application/json" hidden>
+        </label>
+      </div>
+    </div>
+  </div>
   <div class="panel" id="settingsPanel"><h3>إعدادات الشركة</h3><div class="grid two" style="margin-top:12px"><div class="field"><label>اسم الشركة</label><input id="companyName"></div><div class="field"><label>وصف الخدمة</label><input id="companyLine"></div><div class="field" style="grid-column:1/-1"><label>أرقام التواصل (افصل بينها بفاصلة)</label><input id="phones" dir="ltr" inputmode="tel" style="text-align:right;unicode-bidi:plaintext"></div></div><div class="font-settings"><h4>خطوط المعاينة وملف PDF</h4><p class="panel-sub">الخطوط الأصلية مدمجة داخل المشروع وتعمل تلقائيًا على GitHub وفي المعاينة وملف PDF. ويمكن رفع خط بديل على هذا الجهاز عند الحاجة.</p><div class="grid two" style="margin-top:10px"><div class="font-upload-card"><strong>Expo Arabic — النصوص</strong><div class="actions"><label class="btn light small">رفع خط بديل<input id="fontUploadExpo" type="file" accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff,font/woff2" hidden></label><button class="btn outline small" type="button" data-reset-font="expo">الرجوع للمدمج</button></div><div class="font-file-name" id="fontNameExpo">لم يتم رفع ملف</div></div><div class="font-upload-card"><strong>GE SS Two — العناوين</strong><div class="actions"><label class="btn light small">رفع خط بديل<input id="fontUploadGess" type="file" accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff,font/woff2" hidden></label><button class="btn outline small" type="button" data-reset-font="gess">الرجوع للمدمج</button></div><div class="font-file-name" id="fontNameGess">لم يتم رفع ملف</div></div><div class="font-upload-card"><strong>Helvetica Bold — النصوص البديلة</strong><div class="actions"><label class="btn light small">رفع خط بديل<input id="fontUploadHelveticaBold" type="file" accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff,font/woff2" hidden></label><button class="btn outline small" type="button" data-reset-font="helveticaBold">الرجوع للمدمج</button></div><div class="font-file-name" id="fontNameHelveticaBold">لم يتم رفع ملف</div></div><div class="font-upload-card"><strong>Helvetica Rounded — الأرقام والأسعار</strong><div class="actions"><label class="btn light small">رفع خط بديل<input id="fontUploadHelveticaRounded" type="file" accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff,font/woff2" hidden></label><button class="btn outline small" type="button" data-reset-font="helveticaRounded">الرجوع للمدمج</button></div><div class="font-file-name" id="fontNameHelveticaRounded">لم يتم رفع ملف</div></div></div></div><div class="actions" style="margin-top:12px"><button class="btn primary" id="saveSettings">حفظ الإعدادات</button><button class="btn danger" id="lockApp" type="button">قفل البرنامج (تسجيل الخروج)</button></div></div>
 </section>
 <section class="column preview-column" id="previewColumn"><div class="panel preview-panel preview-sticky"><div class="preview-tools"><div><h3>معاينة عرض السعر</h3></div><div class="actions"><button class="btn primary" id="downloadPdfQuote">حفظ PDF</button><button class="btn outline" id="printQuote">طباعة</button></div></div><div class="preview-stage"><div id="quotePages"></div></div></div></section>
