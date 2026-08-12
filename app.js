@@ -383,7 +383,7 @@ function moveOfferDown(id){
 }
 
 let saveTimer;
-function autoSave(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>{persist();renderPreview()},120)}
+function autoSave(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>{persist();renderPreview();renderGrandTotalPreview();},120)}
 
 function toast(msg){
   const t=document.getElementById('toast');
@@ -735,6 +735,28 @@ function grandTotalHtml(q){
   </div>`;
 }
 
+function grandTotalTextBlock(q){
+  if(!q.showGrandTotal)return'';
+  const items=q.items||[];
+  const grandTotal=items.reduce((sum,o)=>sum+stats(o).total,0);
+  const totalRooms=items.reduce((sum,o)=>sum+Math.max(1,num(o.roomCount)||1),0);
+  const roomGroups={};
+  items.forEach(o=>{
+    const roomCount=Math.max(1,num(o.roomCount)||1);
+    const label=o.roomType&&o.roomType.trim()?o.roomType.trim():'غرفة';
+    roomGroups[label]=(roomGroups[label]||0)+roomCount;
+  });
+  const breakdownParts=Object.entries(roomGroups).map(([type,count])=>`${count} ${type}`).join(' + ');
+  return[
+    '─────────────────────',
+    `العدد الإجمالي للغرف: ${totalRooms} غرفة`,
+    `التفاصيل: ${breakdownParts}`,
+    `الإجمالي الكلي لجميع الخيارات: ${money(grandTotal)} ${q.currency}`,
+    '─────────────────────'
+  ].join('\n');
+}
+
+
 function previewGreetingHtml(q){
   return`<div class="greeting">عزيزي العميل / <b>${esc(q.customerName||'اسم العميل')}</b><br>${esc(q.intro)}</div>`;
 }
@@ -1037,6 +1059,10 @@ function quoteText(){
     lines.push('');
   });
   lines.push(q.notes,q.closing,'',`للتواصل: ${phoneList().join(' | ')}`);
+  if(q.showGrandTotal){
+    const gtBlock=grandTotalTextBlock(q);
+    if(gtBlock)lines.splice(lines.length-3,0,'',gtBlock);
+  }
   return lines.join('\n');
 }
 
@@ -1121,6 +1147,18 @@ function buildLists(){
   });
 }
 
+function renderGrandTotalPreview(){
+  const preview=document.getElementById('grandTotalPreview');
+  const previewText=document.getElementById('grandTotalPreviewText');
+  const cb=document.getElementById('grandTotalToggle');
+  if(!preview||!previewText||!cb)return;
+  const checked=cb.checked;
+  preview.classList.toggle('visible',checked);
+  if(checked){
+    previewText.value=grandTotalTextBlock(app.draft);
+  }
+}
+
 function renderAll(){
   normalize();
   bindRoot();
@@ -1131,6 +1169,7 @@ function renderAll(){
   // Sync grand total checkbox state with current draft
   const _gtCb=document.getElementById('grandTotalToggle');
   if(_gtCb)_gtCb.checked=!!(app.draft.showGrandTotal);
+  renderGrandTotalPreview();
 }
 
 
@@ -1174,17 +1213,12 @@ function init(){
     renderAll();
   };
 
-  // Grand total toggle checkbox
-  function syncGrandTotalCheckbox(){
-    const cb=document.getElementById('grandTotalToggle');
-    if(cb)cb.checked=!!(app.draft.showGrandTotal);
-  }
-  syncGrandTotalCheckbox();
   const grandTotalCb=document.getElementById('grandTotalToggle');
   if(grandTotalCb)grandTotalCb.addEventListener('change',()=>{
     app.draft.showGrandTotal=grandTotalCb.checked;
     persist();
     renderPreview();
+    renderGrandTotalPreview();
   });
 
   ['saveQuote','saveQuoteTop'].forEach(id=>{

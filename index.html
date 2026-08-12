@@ -116,6 +116,15 @@ input,select,textarea,button{font-family:'ExpoArabic','HelveticaBold',Arial,sans
 .backup-btn.import-btn{background:#fff;border:1.5px solid #c9a9b5;color:var(--burg)}
 .backup-btn.import-btn:hover{background:#fef0f4;border-color:var(--burg);transform:translateY(-1px)}
 
+.grand-total-panel{}
+.grand-total-toggle-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.grand-total-toggle-label{display:inline-flex;align-items:center;gap:8px;cursor:pointer;user-select:none;font-size:13px;color:#583640;font-weight:700}
+.grand-total-toggle-label input[type=checkbox]{width:18px;height:18px;accent-color:#6b0d24;cursor:pointer;margin:0;flex-shrink:0}
+.grand-total-preview{margin-top:13px;display:none}
+.grand-total-preview.visible{display:block}
+.grand-total-preview-label{font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:700}
+.grand-total-preview textarea{width:100%;min-height:90px;padding:10px 12px;border:1.5px solid #c9b4bb;border-radius:10px;background:#faf6f7;font-family:'ExpoArabic','HelveticaBold',Arial,sans-serif;font-size:12px;color:#32151e;resize:vertical;line-height:1.9;direction:rtl}
+
 
 .quote-page{font-family:'ExpoArabic','HelveticaBold',Tahoma,Arial,sans-serif;font-synthesis:none}
 .quote-page .quote-title h1,.quote-page .quote-title p,.quote-page .greeting b,.quote-page .preview-offer-head,.quote-page .hotel-name,.quote-page .detail b,.quote-page .closing b{font-family:'GESSTwo','ExpoArabic',Tahoma,Arial,sans-serif;font-synthesis:none}
@@ -370,7 +379,23 @@ body.auth-locked .mobile-tabs {
       <div class="field" style="grid-column:1/-1"><label>رسالة المقدمة</label><input id="intro"></div>
     </div>
   </div>
-  <div class="panel"><div class="section-head"><div><h3>خيارات الإقامة</h3></div><div class="actions"><label id="grandTotalToggleLabel" style="display:inline-flex;align-items:center;gap:7px;cursor:pointer;background:#fff8e5;border:1px solid #e3c982;color:#6a4508;border-radius:999px;padding:7px 12px;font-size:12px;font-weight:700;user-select:none" title="عند التفعيل يظهر في المعاينة وملف PDF مجموع كل الغرف والإجمالي الكلي"><input type="checkbox" id="grandTotalToggle" style="width:15px;height:15px;accent-color:#6b0d24;cursor:pointer;margin:0">الإجمالي الكلي</label><button class="btn primary" id="addOffer">+ إضافة خيار</button></div></div><div id="offers"></div></div>
+  <div class="panel"><div class="section-head"><div><h3>خيارات الإقامة</h3></div><div class="actions"><button class="btn primary" id="addOffer">+ إضافة خيار</button></div></div><div id="offers"></div></div>
+  <div class="panel grand-total-panel" id="grandTotalPanel">
+    <div class="grand-total-toggle-row">
+      <div>
+        <h3 style="margin:0;color:var(--burg)">&#x2211; الإجمالي الكلي</h3>
+        <p class="panel-sub" style="margin-top:4px">تفعيل هذا الخيار سيضيف ملخص إجمالي لجميع الغرف والسعر في المعاينة ورسالة الواتسآب</p>
+      </div>
+      <label class="grand-total-toggle-label" for="grandTotalToggle">
+        <input type="checkbox" id="grandTotalToggle">
+        <span>تفعيل</span>
+      </label>
+    </div>
+    <div class="grand-total-preview" id="grandTotalPreview">
+      <p class="grand-total-preview-label">👀 معاينة نص الإجمالي كما سيظهر في رسالة الواتسآب:</p>
+      <textarea id="grandTotalPreviewText" readonly></textarea>
+    </div>
+  </div>
   <div class="panel"><h3>الرسالة والملاحظات</h3><div class="grid two" style="margin-top:12px"><div class="field"><label>ملاحظة الأسعار</label><textarea id="notes"></textarea></div><div class="field"><label>رسالة الختام</label><textarea id="closing"></textarea></div></div><div class="actions" style="margin-top:13px"><button class="btn primary" id="copyText">نسخ رسالة واتساب</button><button class="btn gold" id="saveQuote">حفظ العرض</button><button class="btn outline" id="newQuote">عرض جديد</button></div></div>
   <div class="panel" id="savedPanel"><div class="section-head"><div><h3>العروض المحفوظة</h3></div></div><div id="savedList"></div>
     <div class="backup-card">
@@ -407,6 +432,6 @@ body.auth-locked .mobile-tabs {
 <datalist id="hotelNames"></datalist><datalist id="roomTypes"></datalist><datalist id="mealPlans"></datalist><datalist id="views"></datalist>
 <script src="./vendor/html2canvas.min.js?v=27"></script>
 <script src="./vendor/jspdf.umd.min.js?v=27"></script>
-<script src="./app.js?v=37"></script>
+<script src="./app.js?v=38"></script>
 </body>
 </html>
