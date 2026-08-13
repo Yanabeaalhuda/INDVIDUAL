@@ -29,7 +29,7 @@ const dateLabel=v=>{if(!v)return'—';const p=String(v).split('-');return p.leng
 const nightsText=n=>Number(n)===1?'1 ليلة':`${Number(n)||0} ليالٍ`;
 
 function defaultOffer(){
-  return {id:uid(),hotelMode:'list',hotelId:'',hotelName:'',checkIn:today(),checkOut:tomorrow(),roomType:'',mealPlan:'',view:'',pricingMode:'nightly',nightlyPrice:'',weekdayPrice:'',weekendPrice:'',totalPrice:'',extraBed:'',roomCount:'1',notes:''};
+  return {id:uid(),hotelMode:'list',hotelId:'',hotelName:'',checkIn:today(),checkOut:tomorrow(),checkIn2:'',checkOut2:'',hasTwoPeriods:false,roomType:'',mealPlan:'',view:'',pricingMode:'nightly',nightlyPrice:'',weekdayPrice:'',weekendPrice:'',totalPrice:'',nightlyPrice2:'',weekdayPrice2:'',weekendPrice2:'',totalPrice2:'',extraBed:'',roomCount:'1',notes:''};
 }
 function defaultData(){
   return {
@@ -72,6 +72,9 @@ function normalize(){
     o.id=safeId(o.id);
     while(offerIds.has(o.id))o.id=uid();
     offerIds.add(o.id);
+    o.hasTwoPeriods=!!o.hasTwoPeriods;
+    o.checkIn2=String(o.checkIn2||'');
+    o.checkOut2=String(o.checkOut2||'');
     if(!['list','custom'].includes(o.hotelMode))o.hotelMode=known?'list':(o.hotelName?'custom':'list');
     if(o.hotelMode==='list'&&known){o.hotelId=known.id;o.hotelName=known.name}
     return o;
@@ -442,10 +445,23 @@ function applyHotel(offer,hotelId=''){
   offer.hotelMode='list';
   offer.hotelId=h.id;
   offer.hotelName=h.name;
-  offer.mealPlan=h.mealPlan||offer.mealPlan;
-  const r=(h.rates||[])[0];
-  if(r)offer.roomType=r.roomType||offer.roomType;
-  applyRate(offer);
+  if(!offer.mealPlan)offer.mealPlan=h.mealPlan||'';
+  if(!offer.roomType){
+    const r=(h.rates||[])[0];
+    if(r)offer.roomType=r.roomType||'';
+  }
+  if(!offer.view&&offer.roomType){
+    offer.view=inferView(offer.roomType)||'';
+  }
+  offer.nightlyPrice='';
+  offer.weekdayPrice='';
+  offer.weekendPrice='';
+  offer.totalPrice='';
+  offer.nightlyPrice2='';
+  offer.weekdayPrice2='';
+  offer.weekendPrice2='';
+  offer.totalPrice2='';
+  offer.extraBed='';
   return true;
 }
 
@@ -467,9 +483,9 @@ function applyRate(offer){
   return true;
 }
 
-function stats(o){
-  const start=new Date(`${o.checkIn}T12:00:00`),end=new Date(`${o.checkOut}T12:00:00`);
-  if(!o.checkIn||!o.checkOut||isNaN(start)||isNaN(end)||end<=start)return{nights:0,weekday:0,weekend:0,totalPerRoom:0,total:0,rooms:Math.max(1,num(o.roomCount)||1)};
+function calculatePeriodStats(checkIn, checkOut, pricingMode, priceObj) {
+  const start=new Date(`${checkIn}T12:00:00`),end=new Date(`${checkOut}T12:00:00`);
+  if(!checkIn||!checkOut||isNaN(start)||isNaN(end)||end<=start)return{nights:0,weekday:0,weekend:0,totalPerRoom:0};
   let nights=0,weekday=0,weekend=0;
   for(let d=new Date(start);d<end;d.setDate(d.getDate()+1)){
     nights++;
@@ -477,17 +493,69 @@ function stats(o){
     if(day===4||day===5)weekend++;
     else weekday++;
   }
-  const rooms=Math.max(1,num(o.roomCount)||1);
-  const totalPerRoom=o.pricingMode==='weekdayWeekend'?weekday*num(o.weekdayPrice)+weekend*num(o.weekendPrice):o.pricingMode==='total'?num(o.totalPrice):nights*num(o.nightlyPrice);
-  const total=totalPerRoom*rooms;
-  return{nights,weekday,weekend,totalPerRoom,total,rooms};
+  let totalPerRoom=0;
+  if(pricingMode==='weekdayWeekend'){
+    totalPerRoom=weekday*num(priceObj.weekdayPrice)+weekend*num(priceObj.weekendPrice);
+  }else if(pricingMode==='total'){
+    totalPerRoom=num(priceObj.totalPrice);
+  }else{
+    totalPerRoom=nights*num(priceObj.nightlyPrice);
+  }
+  return{nights,weekday,weekend,totalPerRoom};
 }
 
+function stats(o){
+  const rooms=Math.max(1,num(o.roomCount)||1);
+  const p1=calculatePeriodStats(o.checkIn,o.checkOut,o.pricingMode,{
+    nightlyPrice:o.nightlyPrice,
+    weekdayPrice:o.weekdayPrice,
+    weekendPrice:o.weekendPrice,
+    totalPrice:o.totalPrice
+  });
+
+  if(!o.hasTwoPeriods){
+    return{nights:p1.nights,weekday:p1.weekday,weekend:p1.weekend,totalPerRoom:p1.totalPerRoom,total:p1.totalPerRoom*rooms,rooms,p1,p2:null};
+  }
+
+  const p2=calculatePeriodStats(o.checkIn2,o.checkOut2,o.pricingMode,{
+    nightlyPrice:o.nightlyPrice2,
+    weekdayPrice:o.weekdayPrice2||o.weekdayPrice,
+    weekendPrice:o.weekendPrice2||o.weekendPrice,
+    totalPrice:o.totalPrice2
+  });
+
+  const nights=p1.nights+p2.nights;
+  const weekday=p1.weekday+p2.weekday;
+  const weekend=p1.weekend+p2.weekend;
+  const totalPerRoom=p1.totalPerRoom+p2.totalPerRoom;
+  const total=totalPerRoom*rooms;
+
+  return{nights,weekday,weekend,totalPerRoom,total,rooms,p1,p2};
+}
+
+function periodPricingHtml(o,periodNum=1){
+  const isP2=periodNum===2;
+  const kNightly=isP2?'nightlyPrice2':'nightlyPrice';
+  const kWeekday=isP2?'weekdayPrice2':'weekdayPrice';
+  const kWeekend=isP2?'weekendPrice2':'weekendPrice';
+  const kTotal=isP2?'totalPrice2':'totalPrice';
+  const labelPrefix=isP2?'الفترة الثانية':'الفترة الأولى';
+  const valNightly=o[kNightly]||'';
+  const valWeekday=o[kWeekday]||'';
+  const valWeekend=o[kWeekend]||'';
+  const valTotal=o[kTotal]||'';
+
+  if(o.pricingMode==='weekdayWeekend'){
+    return`<div class="field"><label>سعر WEEKDAY (${labelPrefix})</label><input inputmode="decimal" data-key="${kWeekday}" value="${esc(valWeekday)}"></div><div class="field"><label>سعر WEEKEND (${labelPrefix})</label><input inputmode="decimal" data-key="${kWeekend}" value="${esc(valWeekend)}"></div>`;
+  }
+  if(o.pricingMode==='total'){
+    return`<div class="field"><label>السعر الكامل (${labelPrefix})</label><input inputmode="decimal" data-key="${kTotal}" value="${esc(valTotal)}"></div><div></div>`;
+  }
+  return`<div class="field"><label>سعر الليلة (${labelPrefix})</label><input inputmode="decimal" data-key="${kNightly}" value="${esc(valNightly)}"></div><div></div>`;
+}
 
 function pricingHtml(o){
-  if(o.pricingMode==='weekdayWeekend')return`<div class="field"><label>سعر WEEKDAY</label><input inputmode="decimal" data-key="weekdayPrice" value="${esc(o.weekdayPrice)}"></div><div class="field"><label>سعر WEEKEND</label><input inputmode="decimal" data-key="weekendPrice" value="${esc(o.weekendPrice)}"></div>`;
-  if(o.pricingMode==='total')return`<div class="field"><label>السعر الكامل للمدة</label><input inputmode="decimal" data-key="totalPrice" value="${esc(o.totalPrice)}"></div><div></div>`;
-  return`<div class="field"><label>سعر الليلة</label><input inputmode="decimal" data-key="nightlyPrice" value="${esc(o.nightlyPrice)}"></div><div></div>`;
+  return periodPricingHtml(o,1);
 }
 
 function hotelOptions(selectedId=''){
@@ -520,8 +588,6 @@ function offerHtml(o,i){
         </select>
       </div>
       ${hotelFieldsHtml(o)}
-      <div class="field"><label>تاريخ الدخول</label><input type="date" data-key="checkIn" value="${esc(o.checkIn)}"></div>
-      <div class="field"><label>تاريخ الخروج</label><input type="date" data-key="checkOut" value="${esc(o.checkOut)}"></div>
       <div class="field"><label>نوع الغرفة</label><input data-room-type-input list="roomTypes_${o.id}" data-key="roomType" value="${esc(o.roomType)}"></div>
       <div class="field"><label>نوع الوجبة</label><input list="mealPlans" data-key="mealPlan" value="${esc(o.mealPlan)}"></div>
       <div class="field"><label>الإطلالة</label><input list="views" data-key="view" value="${esc(o.view)}"></div>
@@ -535,7 +601,43 @@ function offerHtml(o,i){
       </div>
       <div class="field"><label>ملاحظات الخيار</label><input data-key="notes" value="${esc(o.notes)}"></div>
       <div class="field"><label>سعر السرير الإضافي</label><input inputmode="decimal" data-key="extraBed" value="${esc(o.extraBed)}"></div>
-      <div class="pricing-fields">${pricingHtml(o)}</div>
+      
+      <div class="field" style="grid-column:1/-1;background:#faf4f6;padding:10px 14px;border-radius:10px;border:1px solid #ebd9de;display:flex;align-items:center;justify-content:space-between">
+        <label style="margin:0;cursor:pointer;display:flex;align-items:center;gap:8px;font-weight:700;color:var(--burg)">
+          <input type="checkbox" data-key="hasTwoPeriods" ${o.hasTwoPeriods?'checked':''} style="width:18px;height:18px;accent-color:var(--burg)">
+          تقسيم الإقامة على فترتين (تاريخين وأسعار مختلفة)
+        </label>
+      </div>
+
+      ${!o.hasTwoPeriods?`
+        <div class="field"><label>تاريخ الدخول</label><input type="date" data-key="checkIn" value="${esc(o.checkIn)}"></div>
+        <div class="field"><label>تاريخ الخروج</label><input type="date" data-key="checkOut" value="${esc(o.checkOut)}"></div>
+        <div></div>
+        <div class="pricing-fields" style="grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+          ${periodPricingHtml(o,1)}
+        </div>
+      `:`
+        <div style="grid-column:1/-1;background:#fff8fa;padding:12px;border-radius:12px;border:1px solid #f0d5dd;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px">
+          <div style="grid-column:1/-1;font-weight:700;color:var(--burg);font-size:13px">الفترة الأولى:</div>
+          <div class="field" style="margin:0"><label>تاريخ الدخول (1)</label><input type="date" data-key="checkIn" value="${esc(o.checkIn)}"></div>
+          <div class="field" style="margin:0"><label>تاريخ الخروج (1)</label><input type="date" data-key="checkOut" value="${esc(o.checkOut)}"></div>
+          <div></div>
+          <div style="grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+            ${periodPricingHtml(o,1)}
+          </div>
+        </div>
+
+        <div style="grid-column:1/-1;background:#f4f7fc;padding:12px;border-radius:12px;border:1px solid #d0dbe8;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px">
+          <div style="grid-column:1/-1;font-weight:700;color:#1e40af;font-size:13px">الفترة الثانية:</div>
+          <div class="field" style="margin:0"><label>تاريخ الدخول (2)</label><input type="date" data-key="checkIn2" value="${esc(o.checkIn2)}"></div>
+          <div class="field" style="margin:0"><label>تاريخ الخروج (2)</label><input type="date" data-key="checkOut2" value="${esc(o.checkOut2)}"></div>
+          <div></div>
+          <div style="grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+            ${periodPricingHtml(o,2)}
+          </div>
+        </div>
+      `}
+
       <div class="field" style="grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:12px">
         <div class="field" style="margin:0">
           <label>عدد الغرف</label>
@@ -544,7 +646,12 @@ function offerHtml(o,i){
         <div></div>
       </div>
     </div>
-    <div class="summary"><span>${nightsText(s.nights)}</span><span>WEEKDAY: ${s.weekday}</span><span>WEEKEND: ${s.weekend}</span><span style="background:#e7f3e8;color:#2d6b31">الغرف: ${s.rooms}</span></div>
+    <div class="summary">
+      <span>${o.hasTwoPeriods?`إجمالي: ${nightsText(s.nights)} (ف1: ${s.p1?.nights||0} · ف2: ${s.p2?.nights||0})`:nightsText(s.nights)}</span>
+      <span>WEEKDAY: ${s.weekday}</span>
+      <span>WEEKEND: ${s.weekend}</span>
+      <span style="background:#e7f3e8;color:#2d6b31">الغرف: ${s.rooms}</span>
+    </div>
     ${s.rooms>1?`
     <div class="option-total" style="background:linear-gradient(90deg,#3a5c38,#4a7a47);margin-top:8px">
       <span>إجمالي الغرفة الواحدة</span><b style="color:#c8f0c5">${money(s.totalPerRoom)} ${esc(app.draft.currency)}</b>
@@ -565,7 +672,7 @@ function updateRoomTypesList(card, o){
     rooms=[...new Set(HOTELS.flatMap(h=>(h.rates||[]).map(r=>r.roomType)).filter(Boolean))];
   }
   const listId=`roomTypes_${o.id}`;
-  let listEl=document.getElementById(listId);
+  let listEl=document.body.querySelector(`#${listId}`);
   if(!listEl){
     listEl=document.createElement('datalist');
     listEl.id=listId;
@@ -577,7 +684,7 @@ function updateRoomTypesList(card, o){
 function updateOfferCardSummary(card,o){
   const s=stats(o);
   const summary=card.querySelectorAll('.summary span');
-  if(summary[0])summary[0].textContent=nightsText(s.nights);
+  if(summary[0])summary[0].textContent=o.hasTwoPeriods?`إجمالي: ${nightsText(s.nights)} (ف1: ${s.p1?.nights||0} · ف2: ${s.p2?.nights||0})`:nightsText(s.nights);
   if(summary[1])summary[1].textContent=`WEEKDAY: ${s.weekday}`;
   if(summary[2])summary[2].textContent=`WEEKEND: ${s.weekend}`;
   if(summary[3])summary[3].textContent=`الغرف: ${s.rooms}`;
@@ -632,7 +739,7 @@ function renderOffers(){
       o.hotelId='';
       o.hotelName='';
       if(o.hotelMode==='custom'){
-        o.roomType='';o.mealPlan='';o.view='';o.nightlyPrice='';o.weekdayPrice='';o.weekendPrice='';o.extraBed='';
+        o.nightlyPrice='';o.weekdayPrice='';o.weekendPrice='';o.totalPrice='';o.extraBed='';
       }
       refresh();
     });
@@ -642,7 +749,7 @@ function renderOffers(){
       const selected=hotelSelect.value;
       o.hotelId=selected;
       o.hotelName='';
-      if(selected&&applyHotel(o,selected))toast('تم اختيار الفندق وتحديث بياناته');
+      if(selected&&applyHotel(o,selected))toast('تم اختيار الفندق والحفاظ على باقي البيانات');
       refresh();
     });
 
@@ -654,30 +761,62 @@ function renderOffers(){
 
     card.querySelectorAll('[data-key]').forEach(el=>{
       const key=el.dataset.key;
-      const needsRebuild=['pricingMode','roomType','checkIn','checkOut'].includes(key);
+      const needsRebuild=['pricingMode','roomType','checkIn','checkOut','hasTwoPeriods','checkIn2','checkOut2'].includes(key);
       el.addEventListener('input',()=>{
-        o[key]=el.value;
+        if(el.type==='checkbox'){
+          o[key]=el.checked;
+          if(key==='hasTwoPeriods'&&el.checked){
+            if(!o.checkIn2)o.checkIn2=o.checkOut||today();
+            if(!o.checkOut2){
+              const d=new Date(`${o.checkIn2||today()}T12:00:00`);
+              d.setDate(d.getDate()+2);
+              o.checkOut2=localISODate(d);
+            }
+          }
+        }else{
+          o[key]=el.value;
+        }
         updateOfferCardSummary(card,o);
-        if(key==='checkIn'||key==='checkOut'){
+        if(['checkIn','checkOut','checkIn2','checkOut2'].includes(key)){
           if(key==='checkIn'&&o.checkOut&&o.checkOut<=o.checkIn){
             const d=new Date(`${o.checkIn}T12:00:00`);
             d.setDate(d.getDate()+1);
             o.checkOut=localISODate(d);
           }
-          applyRate(o);
+          if(key==='checkIn2'&&o.checkOut2&&o.checkOut2<=o.checkIn2){
+            const d=new Date(`${o.checkIn2}T12:00:00`);
+            d.setDate(d.getDate()+1);
+            o.checkOut2=localISODate(d);
+          }
           persist();
           renderPreview();
-            } else autoSave();
+        } else autoSave();
       });
       el.addEventListener('change',()=>{
-        o[key]=el.value;
+        if(el.type==='checkbox'){
+          o[key]=el.checked;
+          if(key==='hasTwoPeriods'&&el.checked){
+            if(!o.checkIn2)o.checkIn2=o.checkOut||today();
+            if(!o.checkOut2){
+              const d=new Date(`${o.checkIn2||today()}T12:00:00`);
+              d.setDate(d.getDate()+2);
+              o.checkOut2=localISODate(d);
+            }
+          }
+        }else{
+          o[key]=el.value;
+        }
         if(key==='checkIn'&&o.checkOut&&o.checkOut<=o.checkIn){
           const d=new Date(`${o.checkIn}T12:00:00`);
           d.setDate(d.getDate()+1);
           o.checkOut=localISODate(d);
         }
+        if(key==='checkIn2'&&o.checkOut2&&o.checkOut2<=o.checkIn2){
+          const d=new Date(`${o.checkIn2}T12:00:00`);
+          d.setDate(d.getDate()+1);
+          o.checkOut2=localISODate(d);
+        }
         if(['roomType','checkIn','checkOut'].includes(key))applyRate(o);
-        // Prices and ordinary text fields must not destroy/recreate the form on blur.
         if(needsRebuild)refresh();
         else commitWithoutRebuild();
       });
@@ -696,7 +835,28 @@ function renderOffers(){
   });
 }
 
+function previewPricePeriod(o, pStats, periodNum, currency) {
+  const isP2 = periodNum === 2;
+  const kNightly = isP2 ? 'nightlyPrice2' : 'nightlyPrice';
+  const kWeekday = isP2 ? 'weekdayPrice2' : 'weekdayPrice';
+  const kWeekend = isP2 ? 'weekendPrice2' : 'weekendPrice';
+  const kTotal = isP2 ? 'totalPrice2' : 'totalPrice';
+
+  if (o.pricingMode === 'weekdayWeekend') {
+    const wd = o[kWeekday] || (isP2 ? o.weekdayPrice : '');
+    const we = o[kWeekend] || (isP2 ? o.weekendPrice : '');
+    return `وسط الأسبوع: ${money(wd)} × ${pStats.weekday} · ويك إند: ${money(we)} × ${pStats.weekend}`;
+  }
+  if (o.pricingMode === 'total') {
+    return `السعر الكامل: ${money(o[kTotal])} ${esc(currency)}`;
+  }
+  return `سعر الليلة: ${money(o[kNightly])} ${esc(currency)}`;
+}
+
 function previewPrice(o,s){
+  if(o.hasTwoPeriods && s.p1 && s.p2) {
+    return `إجمالي الفترتين (${nightsText(s.nights)})`;
+  }
   if(o.pricingMode==='weekdayWeekend')return`وسط الأسبوع: ${money(o.weekdayPrice)} × ${s.weekday} · نهاية الأسبوع: ${money(o.weekendPrice)} × ${s.weekend}`;
   if(o.pricingMode==='total')return`السعر الكامل للمدة: ${money(o.totalPrice)} ${esc(app.draft.currency)}`;
   return`سعر الليلة: ${money(o.nightlyPrice)} ${esc(app.draft.currency)}`;
@@ -705,11 +865,8 @@ function previewPrice(o,s){
 function grandTotalHtml(q){
   if(!q.showGrandTotal)return'';
   const items=q.items||[];
-  // sum total price across all items
   const grandTotal=items.reduce((sum,o)=>sum+stats(o).total,0);
-  // total room count
   const totalRooms=items.reduce((sum,o)=>sum+Math.max(1,num(o.roomCount)||1),0);
-  // group by roomType label
   const roomGroups={};
   items.forEach(o=>{
     const roomCount=Math.max(1,num(o.roomCount)||1);
@@ -1068,22 +1225,37 @@ function quoteText(){
   q.items.forEach((o,i)=>{
     const s=stats(o);
     if(q.items.length > 1) lines.push(`الخيار ${i+1}:`);
-    lines.push(
-      `الفندق: ${o.hotelName||'—'}`,
-      `الدخول: ${dateLabel(o.checkIn)}`,
-      `الخروج: ${dateLabel(o.checkOut)}`,
-      `نوع الغرفة: ${o.roomType||'—'}`,
-      `نوع الوجبة: ${o.mealPlan||'—'}`,
-      `الإطلالة: ${o.view||'—'}`,
-      `عدد الليالي: ${nightsText(s.nights)}`,
-      `عدد الغرف: ${s.rooms}`
-    );
-    if(o.pricingMode==='weekdayWeekend')
-      lines.push(`سعر وسط الأسبوع: ${money(o.weekdayPrice)} ${q.currency} × ${s.weekday}`,`سعر نهاية الأسبوع: ${money(o.weekendPrice)} ${q.currency} × ${s.weekend}`);
-    else if(o.pricingMode==='total')
-      lines.push(`السعر الكامل للمدة: ${money(o.totalPrice)} ${q.currency}`);
-    else
-      lines.push(`سعر الليلة: ${money(o.nightlyPrice)} ${q.currency}`);
+    if(o.hasTwoPeriods && s.p1 && s.p2){
+      lines.push(
+        `الفندق: ${o.hotelName||'—'}`,
+        `فترة الإقامة الأولى: من ${dateLabel(o.checkIn)} إلى ${dateLabel(o.checkOut)} (${nightsText(s.p1.nights)})`,
+        `سعر الفترة الأولى: ${previewPricePeriod(o, s.p1, 1, q.currency)}`,
+        `فترة الإقامة الثانية: من ${dateLabel(o.checkIn2)} إلى ${dateLabel(o.checkOut2)} (${nightsText(s.p2.nights)})`,
+        `سعر الفترة الثانية: ${previewPricePeriod(o, s.p2, 2, q.currency)}`,
+        `إجمالي عدد الليالي: ${nightsText(s.nights)}`,
+        `نوع الغرفة: ${o.roomType||'—'}`,
+        `نوع الوجبة: ${o.mealPlan||'—'}`,
+        `الإطلالة: ${o.view||'—'}`,
+        `عدد الغرف: ${s.rooms}`
+      );
+    }else{
+      lines.push(
+        `الفندق: ${o.hotelName||'—'}`,
+        `الدخول: ${dateLabel(o.checkIn)}`,
+        `الخروج: ${dateLabel(o.checkOut)}`,
+        `نوع الغرفة: ${o.roomType||'—'}`,
+        `نوع الوجبة: ${o.mealPlan||'—'}`,
+        `الإطلالة: ${o.view||'—'}`,
+        `عدد الليالي: ${nightsText(s.nights)}`,
+        `عدد الغرف: ${s.rooms}`
+      );
+      if(o.pricingMode==='weekdayWeekend')
+        lines.push(`سعر وسط الأسبوع: ${money(o.weekdayPrice)} ${q.currency} × ${s.weekday}`,`سعر نهاية الأسبوع: ${money(o.weekendPrice)} ${q.currency} × ${s.weekend}`);
+      else if(o.pricingMode==='total')
+        lines.push(`السعر الكامل للمدة: ${money(o.totalPrice)} ${q.currency}`);
+      else
+        lines.push(`سعر الليلة: ${money(o.nightlyPrice)} ${q.currency}`);
+    }
     
     if(num(o.extraBed)>0)
       lines.push(`سعر السرير الإضافي: ${money(o.extraBed)} ${q.currency}`);
