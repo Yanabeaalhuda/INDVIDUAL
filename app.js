@@ -20,16 +20,41 @@ const tomorrow=()=>{const d=new Date();d.setDate(d.getDate()+1);return localISOD
 const clone=v=>JSON.parse(JSON.stringify(v));
 const safeId=v=>/^[A-Za-z0-9_-]{1,64}$/.test(String(v||''))?String(v):uid();
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const num=v=>{
-  const n=Number(String(v??'').replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[٬,\s]/g,'').replace('٫','.'));
-  return Number.isFinite(n)?n:0;
+const normalizedNumberString=v=>String(v??'').replace(/[٠-٩]/g,d=>'٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[۰-۹]/g,d=>'۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[٬,\s]/g,'').replace('٫','.');
+const parsedNumber=v=>{
+  const raw=normalizedNumberString(v);
+  if(raw==='')return null;
+  const n=Number(raw);
+  return Number.isFinite(n)?n:null;
 };
+const num=v=>parsedNumber(v)??0;
 const money=v=>new Intl.NumberFormat('en-US',{maximumFractionDigits:2}).format(num(v));
 const dateLabel=v=>{if(!v)return'—';const p=String(v).split('-');return p.length===3?`${p[2]}/${p[1]}/${p[0]}`:v};
 const nightsText=n=>Number(n)===1?'1 ليلة':`${Number(n)||0} ليالٍ`;
+const percent=v=>new Intl.NumberFormat('en-US',{maximumFractionDigits:1}).format(Number(v)||0);
+const addDaysISO=(value,days=1)=>{
+  const match=/^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value||''));
+  if(!match)return'';
+  const d=new Date(Date.UTC(Number(match[1]),Number(match[2])-1,Number(match[3])));
+  d.setUTCDate(d.getUTCDate()+days);
+  return d.toISOString().slice(0,10);
+};
+
+function defaultPeriod(checkIn=today(),checkOut=tomorrow()){
+  return{id:uid(),checkIn:String(checkIn||''),checkOut:String(checkOut||''),nightlyPrice:'',weekdayPrice:'',weekendPrice:'',totalPrice:''};
+}
+
+function defaultCostPeriod(periodId=''){
+  return{periodId:String(periodId||''),nightlyPrice:'',weekdayPrice:'',weekendPrice:'',totalPrice:''};
+}
+
+function defaultSupplierQuote(periods=[]){
+  return{id:uid(),companyName:'',periods:(periods||[]).map(p=>defaultCostPeriod(p.id))};
+}
 
 function defaultOffer(){
-  return {id:uid(),hotelMode:'list',hotelId:'',hotelName:'',checkIn:today(),checkOut:tomorrow(),checkIn2:'',checkOut2:'',hasTwoPeriods:false,roomType:'',mealPlan:'',view:'',pricingMode:'nightly',nightlyPrice:'',weekdayPrice:'',weekendPrice:'',totalPrice:'',nightlyPrice2:'',weekdayPrice2:'',weekendPrice2:'',totalPrice2:'',extraBed:'',roomCount:'1',notes:''};
+  const periods=[defaultPeriod()];
+  return{id:uid(),hotelMode:'list',hotelId:'',hotelName:'',hasMultiplePeriods:false,periods,roomType:'',mealPlan:'',view:'',pricingMode:'nightly',extraBed:'',roomCount:'1',notes:'',costingOpen:false,supplierQuotes:[defaultSupplierQuote(periods)]};
 }
 function defaultData(){
   return {
@@ -41,6 +66,99 @@ function defaultData(){
 }
 
 let app=load();
+
+function nextPeriodAfter(period){
+  const checkIn=period?.checkOut||tomorrow();
+  return defaultPeriod(checkIn,addDaysISO(checkIn,1)||tomorrow());
+}
+
+function activePeriods(o){
+  const periods=Array.isArray(o?.periods)&&o.periods.length?o.periods:[];
+  return o?.hasMultiplePeriods?periods:periods.slice(0,1);
+}
+
+function firstPeriod(o){
+  return activePeriods(o)[0]||o?.periods?.[0]||null;
+}
+
+function syncSupplierCostPeriods(o){
+  const salePeriods=Array.isArray(o.periods)?o.periods:[];
+  if(!Array.isArray(o.supplierQuotes)||!o.supplierQuotes.length)o.supplierQuotes=[defaultSupplierQuote(salePeriods)];
+  const quoteIds=new Set();
+  o.supplierQuotes=o.supplierQuotes.map(raw=>{
+    const quote=raw&&typeof raw==='object'?raw:{};
+    let quoteId=safeId(quote.id);
+    while(quoteIds.has(quoteId))quoteId=uid();
+    quoteIds.add(quoteId);
+    const existing=Array.isArray(quote.periods)?quote.periods:[];
+    const byPeriodId=new Map(existing.filter(Boolean).map(x=>[String(x.periodId||''),x]));
+    return{
+      id:quoteId,
+      companyName:String(quote.companyName||''),
+      periods:salePeriods.map((period,index)=>{
+        const old=byPeriodId.get(period.id)||existing[index]||{};
+        return{
+          periodId:period.id,
+          nightlyPrice:String(old.nightlyPrice??''),
+          weekdayPrice:String(old.weekdayPrice??''),
+          weekendPrice:String(old.weekendPrice??''),
+          totalPrice:String(old.totalPrice??'')
+        };
+      })
+    };
+  });
+}
+
+function normalizeOfferSchema(rawOffer){
+  const raw=rawOffer&&typeof rawOffer==='object'?rawOffer:{};
+  const o=Object.assign(defaultOffer(),raw);
+  const usedPeriodIds=new Set();
+  let sourcePeriods=Array.isArray(raw.periods)&&raw.periods.length?raw.periods:null;
+
+  // Automatic migration for quotes saved by the old fixed two-period version.
+  if(!sourcePeriods){
+    sourcePeriods=[{
+      checkIn:raw.checkIn||today(),checkOut:raw.checkOut||tomorrow(),
+      nightlyPrice:raw.nightlyPrice,weekdayPrice:raw.weekdayPrice,
+      weekendPrice:raw.weekendPrice,totalPrice:raw.totalPrice
+    }];
+    if(raw.hasTwoPeriods){
+      sourcePeriods.push({
+        checkIn:raw.checkIn2||raw.checkOut||tomorrow(),
+        checkOut:raw.checkOut2||addDaysISO(raw.checkIn2||raw.checkOut||tomorrow(),1),
+        nightlyPrice:raw.nightlyPrice2,weekdayPrice:raw.weekdayPrice2,
+        weekendPrice:raw.weekendPrice2,totalPrice:raw.totalPrice2
+      });
+    }
+  }
+
+  o.periods=sourcePeriods.map((source,index)=>{
+    const fallback=index?nextPeriodAfter(sourcePeriods[index-1]):defaultPeriod();
+    const p=source&&typeof source==='object'?source:{};
+    let id=safeId(p.id);
+    while(usedPeriodIds.has(id))id=uid();
+    usedPeriodIds.add(id);
+    return{
+      id,
+      checkIn:String(p.checkIn||fallback.checkIn||''),
+      checkOut:String(p.checkOut||fallback.checkOut||''),
+      nightlyPrice:String(p.nightlyPrice??''),
+      weekdayPrice:String(p.weekdayPrice??''),
+      weekendPrice:String(p.weekendPrice??''),
+      totalPrice:String(p.totalPrice??'')
+    };
+  });
+  if(!o.periods.length)o.periods=[defaultPeriod()];
+  o.hasMultiplePeriods=raw.hasMultiplePeriods!==undefined?!!raw.hasMultiplePeriods:!!raw.hasTwoPeriods;
+  if(o.hasMultiplePeriods&&o.periods.length<2)o.periods.push(nextPeriodAfter(o.periods[0]));
+  o.costingOpen=!!raw.costingOpen;
+  o.supplierQuotes=Array.isArray(raw.supplierQuotes)&&raw.supplierQuotes.length?raw.supplierQuotes:[defaultSupplierQuote(o.periods)];
+  syncSupplierCostPeriods(o);
+
+  // Remove obsolete aliases after migration so there is only one source of truth.
+  ['checkIn','checkOut','checkIn2','checkOut2','hasTwoPeriods','nightlyPrice','weekdayPrice','weekendPrice','totalPrice','nightlyPrice2','weekdayPrice2','weekendPrice2','totalPrice2'].forEach(key=>delete o[key]);
+  return o;
+}
 
 function normalize(){
   const d=defaultData();
@@ -68,13 +186,10 @@ function normalize(){
   app.draft.items=Array.isArray(app.draft.items)&&app.draft.items.length?app.draft.items.slice(0,MAX_OFFERS):[defaultOffer()];
   const offerIds=new Set();
   app.draft.items=app.draft.items.map(x=>{
-    const o=Object.assign(defaultOffer(),x||{}),known=findHotel(o.hotelName,o.hotelId);
+    const o=normalizeOfferSchema(x),known=findHotel(o.hotelName,o.hotelId);
     o.id=safeId(o.id);
     while(offerIds.has(o.id))o.id=uid();
     offerIds.add(o.id);
-    o.hasTwoPeriods=!!o.hasTwoPeriods;
-    o.checkIn2=String(o.checkIn2||'');
-    o.checkOut2=String(o.checkOut2||'');
     if(!['list','custom'].includes(o.hotelMode))o.hotelMode=known?'list':(o.hotelName?'custom':'list');
     if(o.hotelMode==='list'&&known){o.hotelId=known.id;o.hotelName=known.name}
     return o;
@@ -357,6 +472,18 @@ function duplicateOffer(id){
   if(sourceIndex<0){toast('تعذر العثور على الخيار المطلوب');return}
   const copy=clone(app.draft.items[sourceIndex]);
   copy.id=uid();
+  const periodIdMap=new Map();
+  copy.periods=(copy.periods||[]).map(period=>{
+    const oldId=period.id;
+    const newId=uid();
+    periodIdMap.set(oldId,newId);
+    return{...period,id:newId};
+  });
+  copy.supplierQuotes=(copy.supplierQuotes||[]).map(quote=>({
+    ...quote,
+    id:uid(),
+    periods:(quote.periods||[]).map(period=>({...period,periodId:periodIdMap.get(period.periodId)||period.periodId}))
+  }));
   app.draft.items.splice(sourceIndex+1,0,copy);
   persist();
   renderAll();
@@ -402,13 +529,13 @@ function findHotel(name,id=''){
   return HOTELS.find(h=>h.id===id)||HOTELS.find(h=>String(h.name).trim().toLowerCase()===key||String(h.englishName).trim().toLowerCase()===key);
 }
 
-function matchingRate(offer){
+function matchingRate(offer,dateValue=''){
   const h=findHotel(offer.hotelName,offer.hotelId);
   if(!h)return null;
   const room=String(offer.roomType||'').trim().toLowerCase();
   let candidates=(h.rates||[]).filter(r=>String(r.roomType||'').trim().toLowerCase()===room);
   if(!candidates.length)candidates=h.rates||[];
-  const date=offer.checkIn||today();
+  const date=dateValue||firstPeriod(offer)?.checkIn||today();
   const exact=candidates.find((r,i)=>(!r.from||date>=r.from)&&(!r.to||date<r.to||(i===candidates.length-1&&date<=r.to)));
   if(exact)return exact;
   return candidates.slice().sort((a,b)=>Math.abs(new Date(date)-new Date(a.from||date))-Math.abs(new Date(date)-new Date(b.from||date)))[0]||null;
@@ -453,43 +580,63 @@ function applyHotel(offer,hotelId=''){
   if(!offer.view&&offer.roomType){
     offer.view=inferView(offer.roomType)||'';
   }
-  offer.nightlyPrice='';
-  offer.weekdayPrice='';
-  offer.weekendPrice='';
-  offer.totalPrice='';
-  offer.nightlyPrice2='';
-  offer.weekdayPrice2='';
-  offer.weekendPrice2='';
-  offer.totalPrice2='';
+  (offer.periods||[]).forEach(period=>{
+    period.nightlyPrice='';
+    period.weekdayPrice='';
+    period.weekendPrice='';
+    period.totalPrice='';
+  });
+  (offer.supplierQuotes||[]).forEach(quote=>(quote.periods||[]).forEach(period=>{
+    period.nightlyPrice='';
+    period.weekdayPrice='';
+    period.weekendPrice='';
+    period.totalPrice='';
+  }));
   offer.extraBed='';
   return true;
 }
 
-function applyRate(offer){
-  const r=matchingRate(offer),p=ratePrices(r);
+function applyRateToPeriod(offer,period,updateMode=true){
+  const r=matchingRate(offer,period?.checkIn),p=ratePrices(r);
   if(!r)return false;
-  offer.weekdayPrice=p.weekday||'';
-  offer.weekendPrice=p.weekend||p.weekday||'';
-  offer.nightlyPrice=p.weekday||p.weekend||'';
+  period.weekdayPrice=p.weekday||'';
+  period.weekendPrice=p.weekend||p.weekday||'';
+  period.nightlyPrice=p.weekday||p.weekend||'';
   offer.extraBed=String(r.extraBed??'');
   offer.view=inferView(offer.roomType)||offer.view;
-
-  // Auto-set pricingMode if hotel rates specify weekday vs weekend rates
-  if(p.weekday && p.weekend && num(p.weekday) !== num(p.weekend)){
+  if(updateMode&&p.weekday&&p.weekend&&num(p.weekday)!==num(p.weekend)){
     offer.pricingMode='weekdayWeekend';
-  } else if(p.weekday && (!p.weekend || num(p.weekday) === num(p.weekend))){
+  }else if(updateMode&&offer.pricingMode!=='weekdayWeekend'&&p.weekday){
     offer.pricingMode='nightly';
   }
   return true;
 }
 
+function applyRate(offer){
+  let applied=false,hasDifferentRates=false;
+  (offer.periods||[]).forEach(period=>{
+    const r=matchingRate(offer,period.checkIn),prices=ratePrices(r);
+    if(!r)return;
+    applied=true;
+    if(prices.weekday&&prices.weekend&&num(prices.weekday)!==num(prices.weekend))hasDifferentRates=true;
+    applyRateToPeriod(offer,period,false);
+  });
+  if(applied)offer.pricingMode=hasDifferentRates?'weekdayWeekend':'nightly';
+  return applied;
+}
+
 function calculatePeriodStats(checkIn, checkOut, pricingMode, priceObj) {
-  const start=new Date(`${checkIn}T12:00:00`),end=new Date(`${checkOut}T12:00:00`);
-  if(!checkIn||!checkOut||isNaN(start)||isNaN(end)||end<=start)return{nights:0,weekday:0,weekend:0,totalPerRoom:0};
-  let nights=0,weekday=0,weekend=0;
-  for(let d=new Date(start);d<end;d.setDate(d.getDate()+1)){
-    nights++;
-    const day=d.getDay();
+  const startMatch=/^(\d{4})-(\d{2})-(\d{2})$/.exec(String(checkIn||''));
+  const endMatch=/^(\d{4})-(\d{2})-(\d{2})$/.exec(String(checkOut||''));
+  if(!startMatch||!endMatch)return{nights:0,weekday:0,weekend:0,totalPerRoom:0,valid:false};
+  const start=Date.UTC(Number(startMatch[1]),Number(startMatch[2])-1,Number(startMatch[3]));
+  const end=Date.UTC(Number(endMatch[1]),Number(endMatch[2])-1,Number(endMatch[3]));
+  if(!Number.isFinite(start)||!Number.isFinite(end)||end<=start)return{nights:0,weekday:0,weekend:0,totalPerRoom:0,valid:false};
+  const dayMs=24*60*60*1000;
+  const nights=Math.round((end-start)/dayMs);
+  let weekday=0,weekend=0;
+  for(let stamp=start;stamp<end;stamp+=dayMs){
+    const day=new Date(stamp).getUTCDay();
     if(day===4||day===5)weekend++;
     else weekday++;
   }
@@ -501,61 +648,177 @@ function calculatePeriodStats(checkIn, checkOut, pricingMode, priceObj) {
   }else{
     totalPerRoom=nights*num(priceObj.nightlyPrice);
   }
-  return{nights,weekday,weekend,totalPerRoom};
+  return{nights,weekday,weekend,totalPerRoom,valid:true};
 }
 
 function stats(o){
   const rooms=Math.max(1,num(o.roomCount)||1);
-  const p1=calculatePeriodStats(o.checkIn,o.checkOut,o.pricingMode,{
-    nightlyPrice:o.nightlyPrice,
-    weekdayPrice:o.weekdayPrice,
-    weekendPrice:o.weekendPrice,
-    totalPrice:o.totalPrice
-  });
-
-  if(!o.hasTwoPeriods){
-    return{nights:p1.nights,weekday:p1.weekday,weekend:p1.weekend,totalPerRoom:p1.totalPerRoom,total:p1.totalPerRoom*rooms,rooms,p1,p2:null};
-  }
-
-  const p2=calculatePeriodStats(o.checkIn2,o.checkOut2,o.pricingMode,{
-    nightlyPrice:o.nightlyPrice2,
-    weekdayPrice:o.weekdayPrice2||o.weekdayPrice,
-    weekendPrice:o.weekendPrice2||o.weekendPrice,
-    totalPrice:o.totalPrice2
-  });
-
-  const nights=p1.nights+p2.nights;
-  const weekday=p1.weekday+p2.weekday;
-  const weekend=p1.weekend+p2.weekend;
-  const totalPerRoom=p1.totalPerRoom+p2.totalPerRoom;
+  const periods=activePeriods(o).map(period=>({
+    periodId:period.id,
+    ...calculatePeriodStats(period.checkIn,period.checkOut,o.pricingMode,period)
+  }));
+  const nights=periods.reduce((sum,p)=>sum+p.nights,0);
+  const weekday=periods.reduce((sum,p)=>sum+p.weekday,0);
+  const weekend=periods.reduce((sum,p)=>sum+p.weekend,0);
+  const totalPerRoom=periods.reduce((sum,p)=>sum+p.totalPerRoom,0);
   const total=totalPerRoom*rooms;
-
-  return{nights,weekday,weekend,totalPerRoom,total,rooms,p1,p2};
+  return{nights,weekday,weekend,totalPerRoom,total,rooms,periods,p1:periods[0]||null,p2:periods[1]||null};
 }
 
-function periodPricingHtml(o,periodNum=1){
-  const isP2=periodNum===2;
-  const kNightly=isP2?'nightlyPrice2':'nightlyPrice';
-  const kWeekday=isP2?'weekdayPrice2':'weekdayPrice';
-  const kWeekend=isP2?'weekendPrice2':'weekendPrice';
-  const kTotal=isP2?'totalPrice2':'totalPrice';
-  const labelPrefix=isP2?'الفترة الثانية':'الفترة الأولى';
-  const valNightly=o[kNightly]||'';
-  const valWeekday=o[kWeekday]||'';
-  const valWeekend=o[kWeekend]||'';
-  const valTotal=o[kTotal]||'';
+function periodLabel(index){
+  const names=['الأولى','الثانية','الثالثة','الرابعة','الخامسة','السادسة','السابعة','الثامنة','التاسعة','العاشرة'];
+  return names[index]?`الفترة ${names[index]}`:`الفترة رقم ${index+1}`;
+}
 
+function periodPricingHtml(o,period,index=0){
+  const labelPrefix=periodLabel(index);
   if(o.pricingMode==='weekdayWeekend'){
-    return`<div class="field"><label>سعر WEEKDAY (${labelPrefix})</label><input inputmode="decimal" data-key="${kWeekday}" value="${esc(valWeekday)}"></div><div class="field"><label>سعر WEEKEND (${labelPrefix})</label><input inputmode="decimal" data-key="${kWeekend}" value="${esc(valWeekend)}"></div>`;
+    return`<div class="field"><label>سعر WEEKDAY (${labelPrefix})</label><input inputmode="decimal" data-period-id="${period.id}" data-period-key="weekdayPrice" value="${esc(period.weekdayPrice)}"></div><div class="field"><label>سعر WEEKEND (${labelPrefix})</label><input inputmode="decimal" data-period-id="${period.id}" data-period-key="weekendPrice" value="${esc(period.weekendPrice)}"></div>`;
   }
   if(o.pricingMode==='total'){
-    return`<div class="field"><label>السعر الكامل (${labelPrefix})</label><input inputmode="decimal" data-key="${kTotal}" value="${esc(valTotal)}"></div><div></div>`;
+    return`<div class="field"><label>السعر الكامل (${labelPrefix})</label><input inputmode="decimal" data-period-id="${period.id}" data-period-key="totalPrice" value="${esc(period.totalPrice)}"></div><div></div>`;
   }
-  return`<div class="field"><label>سعر الليلة (${labelPrefix})</label><input inputmode="decimal" data-key="${kNightly}" value="${esc(valNightly)}"></div><div></div>`;
+  return`<div class="field"><label>سعر الليلة (${labelPrefix})</label><input inputmode="decimal" data-period-id="${period.id}" data-period-key="nightlyPrice" value="${esc(period.nightlyPrice)}"></div><div></div>`;
 }
 
 function pricingHtml(o){
-  return periodPricingHtml(o,1);
+  const period=firstPeriod(o)||defaultPeriod();
+  return periodPricingHtml(o,period,0);
+}
+
+function periodIssues(o){
+  if(!o.hasMultiplePeriods)return[];
+  const periods=activePeriods(o),issues=[];
+  periods.forEach((period,index)=>{
+    const s=calculatePeriodStats(period.checkIn,period.checkOut,o.pricingMode,period);
+    if(!s.valid)issues.push(`${periodLabel(index)}: يجب أن يكون تاريخ الخروج بعد تاريخ الدخول.`);
+    if(index===0)return;
+    const previous=periods[index-1];
+    if(!previous.checkOut||!period.checkIn)return;
+    if(period.checkIn<previous.checkOut)issues.push(`${periodLabel(index)} تتداخل مع ${periodLabel(index-1)}.`);
+    if(period.checkIn>previous.checkOut)issues.push(`توجد فجوة بين ${periodLabel(index-1)} و${periodLabel(index)}.`);
+  });
+  return issues;
+}
+
+function stayPeriodCardHtml(o,period,index,total){
+  const canRemove=index>0&&total>2;
+  return`<div class="stay-period-card" data-stay-period="${period.id}">
+    <div class="stay-period-head">
+      <strong>${periodLabel(index)}</strong>
+      ${canRemove?`<button class="btn danger small" type="button" data-remove-period="${period.id}">حذف الفترة</button>`:''}
+    </div>
+    <div class="period-date-grid">
+      <div class="field"><label>تاريخ الدخول (${index+1})</label><input type="date" data-period-id="${period.id}" data-period-key="checkIn" value="${esc(period.checkIn)}"></div>
+      <div class="field"><label>تاريخ الخروج (${index+1})</label><input type="date" data-period-id="${period.id}" data-period-key="checkOut" value="${esc(period.checkOut)}"></div>
+    </div>
+    <div class="period-price-grid">${periodPricingHtml(o,period,index)}</div>
+  </div>`;
+}
+
+function periodsEditorHtml(o){
+  const periods=activePeriods(o),first=periods[0]||defaultPeriod();
+  if(!o.hasMultiplePeriods){
+    return`<div class="field"><label>تاريخ الدخول</label><input type="date" data-period-id="${first.id}" data-period-key="checkIn" value="${esc(first.checkIn)}"></div>
+      <div class="field"><label>تاريخ الخروج</label><input type="date" data-period-id="${first.id}" data-period-key="checkOut" value="${esc(first.checkOut)}"></div>
+      <div></div>
+      <div class="pricing-fields">${periodPricingHtml(o,first,0)}</div>`;
+  }
+  const issues=periodIssues(o);
+  return`<div class="periods-editor">
+    <div class="periods-list">${periods.map((period,index)=>stayPeriodCardHtml(o,period,index,periods.length)).join('')}</div>
+    <div class="period-add-row"><button class="btn primary small" type="button" data-add-period>+ إضافة فترة أخرى</button><span>ستُحسب كل فترة بسعرها ثم تُجمع تلقائيًا.</span></div>
+    ${issues.length?`<div class="period-validation" role="status">${issues.map(issue=>`<div>⚠ ${esc(issue)}</div>`).join('')}</div>`:''}
+  </div>`;
+}
+
+function validMoneyValue(value){
+  const parsed=parsedNumber(value);
+  return parsed!==null&&parsed>=0;
+}
+
+function costPeriodComplete(o,costPeriod,periodStats){
+  if(!periodStats.valid)return false;
+  if(o.pricingMode==='weekdayWeekend'){
+    return(!periodStats.weekday||validMoneyValue(costPeriod.weekdayPrice))&&(!periodStats.weekend||validMoneyValue(costPeriod.weekendPrice));
+  }
+  if(o.pricingMode==='total')return validMoneyValue(costPeriod.totalPrice);
+  return validMoneyValue(costPeriod.nightlyPrice);
+}
+
+function supplierCostStats(o,quote){
+  const sale=stats(o),periods=activePeriods(o);
+  const costPeriods=periods.map(period=>{
+    const costPeriod=(quote.periods||[]).find(item=>item.periodId===period.id)||defaultCostPeriod(period.id);
+    const calculated=calculatePeriodStats(period.checkIn,period.checkOut,o.pricingMode,costPeriod);
+    return{periodId:period.id,costPeriod,...calculated,complete:costPeriodComplete(o,costPeriod,calculated)};
+  });
+  const complete=costPeriods.length>0&&costPeriods.every(period=>period.complete);
+  const totalPerRoom=costPeriods.reduce((sum,period)=>sum+period.totalPerRoom,0);
+  const total=totalPerRoom*sale.rooms;
+  const profit=sale.total-total;
+  const margin=sale.total?profit/sale.total*100:0;
+  return{complete,totalPerRoom,total,profit,margin,periods:costPeriods};
+}
+
+function bestSupplierQuoteId(o){
+  return(o.supplierQuotes||[]).map(quote=>({id:quote.id,stats:supplierCostStats(o,quote)}))
+    .filter(item=>item.stats.complete)
+    .sort((a,b)=>b.stats.profit-a.stats.profit)[0]?.id||'';
+}
+
+function costPeriodPricingHtml(o,quoteId,salePeriod,costPeriod,index){
+  const common=`data-supplier-id="${quoteId}" data-cost-period-id="${salePeriod.id}"`;
+  if(o.pricingMode==='weekdayWeekend'){
+    return`<div class="field"><label>تكلفة WEEKDAY</label><input inputmode="decimal" ${common} data-cost-key="weekdayPrice" value="${esc(costPeriod.weekdayPrice)}"></div><div class="field"><label>تكلفة WEEKEND</label><input inputmode="decimal" ${common} data-cost-key="weekendPrice" value="${esc(costPeriod.weekendPrice)}"></div>`;
+  }
+  if(o.pricingMode==='total'){
+    return`<div class="field"><label>التكلفة الكاملة للفترة</label><input inputmode="decimal" ${common} data-cost-key="totalPrice" value="${esc(costPeriod.totalPrice)}"></div>`;
+  }
+  return`<div class="field"><label>تكلفة الليلة</label><input inputmode="decimal" ${common} data-cost-key="nightlyPrice" value="${esc(costPeriod.nightlyPrice)}"></div>`;
+}
+
+function supplierQuoteHtml(o,quote,index,bestId){
+  const salePeriods=activePeriods(o),calculated=supplierCostStats(o,quote),currency=app.draft.currency;
+  const ready=calculated.complete;
+  const metric=value=>ready?`${money(value)} ${esc(currency)}`:'—';
+  const profitClass=ready?(calculated.profit>=0?'profit-positive':'profit-negative'):'';
+  return`<div class="supplier-quote-card ${quote.id===bestId?'best-supplier':''}" data-supplier-card="${quote.id}">
+    <div class="supplier-quote-head">
+      <div class="supplier-heading"><strong>السعر من شركة</strong><span class="best-supplier-badge" data-best-supplier ${quote.id===bestId?'':'hidden'}>أفضل مكسب</span></div>
+      ${(o.supplierQuotes||[]).length>1?`<button class="btn danger small" type="button" data-remove-supplier="${quote.id}">حذف الشركة</button>`:''}
+    </div>
+    <div class="field supplier-company-field"><label>اسم الشركة / المورد</label><input data-supplier-id="${quote.id}" data-supplier-key="companyName" value="${esc(quote.companyName)}" placeholder="اكتب اسم الشركة"></div>
+    <div class="cost-periods-list">${salePeriods.map((salePeriod,periodIndex)=>{
+      const costPeriod=(quote.periods||[]).find(item=>item.periodId===salePeriod.id)||defaultCostPeriod(salePeriod.id);
+      const periodStats=calculated.periods[periodIndex];
+      return`<div class="cost-period-row" data-cost-period-row="${salePeriod.id}">
+        <div class="cost-period-title"><strong>تكلفة ${periodLabel(periodIndex)}</strong><span>${dateLabel(salePeriod.checkIn)} ← ${dateLabel(salePeriod.checkOut)} · ${nightsText(periodStats?.nights||0)}</span></div>
+        <div class="cost-period-price-grid">${costPeriodPricingHtml(o,quote.id,salePeriod,costPeriod,periodIndex)}</div>
+        <div class="cost-period-subtotal">إجمالي تكلفة الفترة للغرفة: <b data-cost-period-subtotal>${periodStats?.complete?`${money(periodStats.totalPerRoom)} ${esc(currency)}`:'—'}</b></div>
+      </div>`;
+    }).join('')}</div>
+    <div class="cost-status ${ready?'complete':'incomplete'}" data-cost-status>${ready?'اكتملت أسعار التكلفة لهذه الشركة.':'أدخل سعر التكلفة لكل فترة ليظهر الربح بدقة.'}</div>
+    <div class="cost-metrics">
+      <div class="cost-metric"><span>تكلفة الغرفة الواحدة</span><b data-cost-per-room>${metric(calculated.totalPerRoom)}</b></div>
+      <div class="cost-metric"><span>إجمالي التكلفة (${stats(o).rooms} غرف)</span><b data-cost-total>${metric(calculated.total)}</b></div>
+      <div class="cost-metric ${profitClass}" data-profit-metric><span>صافي المكسب</span><b data-profit>${metric(calculated.profit)}</b></div>
+      <div class="cost-metric ${profitClass}" data-margin-metric><span>نسبة المكسب من البيع</span><b data-margin>${ready?`${percent(calculated.margin)}%`:'—'}</b></div>
+    </div>
+  </div>`;
+}
+
+function costingHtml(o){
+  const sale=stats(o),bestId=bestSupplierQuoteId(o);
+  return`<details class="costing-roll" data-cost-details ${o.costingOpen?'open':''}>
+    <summary><span>حساب التكلفة والمكسب</span><span class="internal-badge">داخلي فقط</span></summary>
+    <div class="costing-body">
+      <div class="private-cost-note">🔒 هذه البيانات محفوظة محليًا للموظف فقط، ولا تظهر في رسالة واتساب أو المعاينة أو ملف PDF.</div>
+      <div class="sale-reference"><span>إجمالي البيع الحالي</span><b>${money(sale.total)} ${esc(app.draft.currency)}</b><small>${money(sale.totalPerRoom)} للغرفة × ${sale.rooms} غرف</small></div>
+      <div class="supplier-quotes">${(o.supplierQuotes||[]).map((quote,index)=>supplierQuoteHtml(o,quote,index,bestId)).join('')}</div>
+      <button class="btn primary small add-supplier-btn" type="button" data-add-supplier>+ إضافة سعر من شركة أخرى</button>
+    </div>
+  </details>`;
 }
 
 function hotelOptions(selectedId=''){
@@ -602,41 +865,14 @@ function offerHtml(o,i){
       <div class="field"><label>ملاحظات الخيار</label><input data-key="notes" value="${esc(o.notes)}"></div>
       <div class="field"><label>سعر السرير الإضافي</label><input inputmode="decimal" data-key="extraBed" value="${esc(o.extraBed)}"></div>
       
-      <div class="field" style="grid-column:1/-1;background:#faf4f6;padding:10px 14px;border-radius:10px;border:1px solid #ebd9de;display:flex;align-items:center;justify-content:space-between">
-        <label style="margin:0;cursor:pointer;display:flex;align-items:center;gap:8px;font-weight:700;color:var(--burg)">
-          <input type="checkbox" data-key="hasTwoPeriods" ${o.hasTwoPeriods?'checked':''} style="width:18px;height:18px;accent-color:var(--burg)">
-          تقسيم الإقامة على فترتين (تاريخين وأسعار مختلفة)
+      <div class="multi-period-toggle">
+        <label>
+          <input type="checkbox" data-multiple-periods ${o.hasMultiplePeriods?'checked':''}>
+          تقسيم الإقامة على أكثر من فترة (تواريخ وأسعار مختلفة)
         </label>
       </div>
 
-      ${!o.hasTwoPeriods?`
-        <div class="field"><label>تاريخ الدخول</label><input type="date" data-key="checkIn" value="${esc(o.checkIn)}"></div>
-        <div class="field"><label>تاريخ الخروج</label><input type="date" data-key="checkOut" value="${esc(o.checkOut)}"></div>
-        <div></div>
-        <div class="pricing-fields" style="grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
-          ${periodPricingHtml(o,1)}
-        </div>
-      `:`
-        <div style="grid-column:1/-1;background:#fff8fa;padding:12px;border-radius:12px;border:1px solid #f0d5dd;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px">
-          <div style="grid-column:1/-1;font-weight:700;color:var(--burg);font-size:13px">الفترة الأولى:</div>
-          <div class="field" style="margin:0"><label>تاريخ الدخول (1)</label><input type="date" data-key="checkIn" value="${esc(o.checkIn)}"></div>
-          <div class="field" style="margin:0"><label>تاريخ الخروج (1)</label><input type="date" data-key="checkOut" value="${esc(o.checkOut)}"></div>
-          <div></div>
-          <div style="grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
-            ${periodPricingHtml(o,1)}
-          </div>
-        </div>
-
-        <div style="grid-column:1/-1;background:#f4f7fc;padding:12px;border-radius:12px;border:1px solid #d0dbe8;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px">
-          <div style="grid-column:1/-1;font-weight:700;color:#1e40af;font-size:13px">الفترة الثانية:</div>
-          <div class="field" style="margin:0"><label>تاريخ الدخول (2)</label><input type="date" data-key="checkIn2" value="${esc(o.checkIn2)}"></div>
-          <div class="field" style="margin:0"><label>تاريخ الخروج (2)</label><input type="date" data-key="checkOut2" value="${esc(o.checkOut2)}"></div>
-          <div></div>
-          <div style="grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
-            ${periodPricingHtml(o,2)}
-          </div>
-        </div>
-      `}
+      ${periodsEditorHtml(o)}
 
       <div class="field" style="grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:12px">
         <div class="field" style="margin:0">
@@ -647,7 +883,7 @@ function offerHtml(o,i){
       </div>
     </div>
     <div class="summary">
-      <span>${o.hasTwoPeriods?`إجمالي: ${nightsText(s.nights)} (ف1: ${s.p1?.nights||0} · ف2: ${s.p2?.nights||0})`:nightsText(s.nights)}</span>
+      <span>${o.hasMultiplePeriods?`إجمالي: ${nightsText(s.nights)} (${s.periods.map((period,index)=>`ف${index+1}: ${period.nights}`).join(' · ')})`:nightsText(s.nights)}</span>
       <span>WEEKDAY: ${s.weekday}</span>
       <span>WEEKEND: ${s.weekend}</span>
       <span style="background:#e7f3e8;color:#2d6b31">الغرف: ${s.rooms}</span>
@@ -659,6 +895,7 @@ function offerHtml(o,i){
     <div class="option-total" style="${s.rooms>1?'margin-top:6px':''}">
       <span>إجمالي هذا الخيار${s.rooms>1?` (${s.rooms} غرف)`:''}</span><b>${money(s.total)} ${esc(app.draft.currency)}</b>
     </div>
+    ${costingHtml(o)}
   </article>`;
 }
 
@@ -684,7 +921,7 @@ function updateRoomTypesList(card, o){
 function updateOfferCardSummary(card,o){
   const s=stats(o);
   const summary=card.querySelectorAll('.summary span');
-  if(summary[0])summary[0].textContent=o.hasTwoPeriods?`إجمالي: ${nightsText(s.nights)} (ف1: ${s.p1?.nights||0} · ف2: ${s.p2?.nights||0})`:nightsText(s.nights);
+  if(summary[0])summary[0].textContent=o.hasMultiplePeriods?`إجمالي: ${nightsText(s.nights)} (${s.periods.map((period,index)=>`ف${index+1}: ${period.nights}`).join(' · ')})`:nightsText(s.nights);
   if(summary[1])summary[1].textContent=`WEEKDAY: ${s.weekday}`;
   if(summary[2])summary[2].textContent=`WEEKEND: ${s.weekend}`;
   if(summary[3])summary[3].textContent=`الغرف: ${s.rooms}`;
@@ -706,6 +943,49 @@ function updateOfferCardSummary(card,o){
   if(s.rooms<=1&&allTotals.length>1){card.querySelector('.option-total[style*="3a5c38"]')?.remove();}
 }
 
+function updateCostingSummary(card,o){
+  const currency=app.draft.currency,sale=stats(o),bestId=bestSupplierQuoteId(o);
+  const saleReference=card.querySelector('.sale-reference');
+  if(saleReference){
+    const total=saleReference.querySelector('b'),detail=saleReference.querySelector('small');
+    if(total)total.textContent=`${money(sale.total)} ${currency}`;
+    if(detail)detail.textContent=`${money(sale.totalPerRoom)} للغرفة × ${sale.rooms} غرف`;
+  }
+  (o.supplierQuotes||[]).forEach(quote=>{
+    const el=card.querySelector(`[data-supplier-card="${quote.id}"]`);
+    if(!el)return;
+    const calculated=supplierCostStats(o,quote),ready=calculated.complete;
+    const metric=value=>ready?`${money(value)} ${currency}`:'—';
+    el.classList.toggle('best-supplier',quote.id===bestId);
+    const badge=el.querySelector('[data-best-supplier]');
+    if(badge)badge.hidden=quote.id!==bestId;
+    const status=el.querySelector('[data-cost-status]');
+    if(status){
+      status.textContent=ready?'اكتملت أسعار التكلفة لهذه الشركة.':'أدخل سعر التكلفة لكل فترة ليظهر الربح بدقة.';
+      status.classList.toggle('complete',ready);
+      status.classList.toggle('incomplete',!ready);
+    }
+    const values={
+      '[data-cost-per-room]':metric(calculated.totalPerRoom),
+      '[data-cost-total]':metric(calculated.total),
+      '[data-profit]':metric(calculated.profit),
+      '[data-margin]':ready?`${percent(calculated.margin)}%`:'—'
+    };
+    Object.entries(values).forEach(([selector,value])=>{const target=el.querySelector(selector);if(target)target.textContent=value});
+    ['[data-profit-metric]','[data-margin-metric]'].forEach(selector=>{
+      const target=el.querySelector(selector);
+      if(!target)return;
+      target.classList.remove('profit-positive','profit-negative');
+      if(ready)target.classList.add(calculated.profit>=0?'profit-positive':'profit-negative');
+    });
+    calculated.periods.forEach(period=>{
+      const row=el.querySelector(`[data-cost-period-row="${period.periodId}"]`);
+      const subtotal=row?.querySelector('[data-cost-period-subtotal]');
+      if(subtotal)subtotal.textContent=period.complete?`${money(period.totalPerRoom)} ${currency}`:'—';
+    });
+  });
+}
+
 function renderOffers(){
   const wrap=document.getElementById('offers');
   if(!wrap)return;
@@ -720,17 +1000,23 @@ function renderOffers(){
     if(!o)return;
     updateRoomTypesList(card, o);
 
-    const refresh=()=>{
+    const refresh=(updateClientOutput=true)=>{
       clearTimeout(saveTimer);
+      syncSupplierCostPeriods(o);
       persist();
       renderOffers();
-      renderPreview();
+      if(updateClientOutput){
+        renderPreview();
+        renderGrandTotalPreview();
+      }
     };
-    const commitWithoutRebuild=()=>{
+    const commitClientFields=()=>{
       clearTimeout(saveTimer);
       persist();
       updateOfferCardSummary(card,o);
+      updateCostingSummary(card,o);
       renderPreview();
+      renderGrandTotalPreview();
     };
     
     const mode=card.querySelector('[data-hotel-mode]');
@@ -739,7 +1025,9 @@ function renderOffers(){
       o.hotelId='';
       o.hotelName='';
       if(o.hotelMode==='custom'){
-        o.nightlyPrice='';o.weekdayPrice='';o.weekendPrice='';o.totalPrice='';o.extraBed='';
+        (o.periods||[]).forEach(period=>{period.nightlyPrice='';period.weekdayPrice='';period.weekendPrice='';period.totalPrice=''});
+        (o.supplierQuotes||[]).forEach(quote=>(quote.periods||[]).forEach(period=>{period.nightlyPrice='';period.weekdayPrice='';period.weekendPrice='';period.totalPrice=''}));
+        o.extraBed='';
       }
       refresh();
     });
@@ -749,7 +1037,10 @@ function renderOffers(){
       const selected=hotelSelect.value;
       o.hotelId=selected;
       o.hotelName='';
-      if(selected&&applyHotel(o,selected))toast('تم اختيار الفندق والحفاظ على باقي البيانات');
+      if(selected&&applyHotel(o,selected)){
+        applyRate(o);
+        toast('تم اختيار الفندق وتحديث الأسعار المتاحة');
+      }
       refresh();
     });
 
@@ -761,66 +1052,106 @@ function renderOffers(){
 
     card.querySelectorAll('[data-key]').forEach(el=>{
       const key=el.dataset.key;
-      const needsRebuild=['pricingMode','roomType','checkIn','checkOut','hasTwoPeriods','checkIn2','checkOut2'].includes(key);
-      el.addEventListener('input',()=>{
-        if(el.type==='checkbox'){
-          o[key]=el.checked;
-          if(key==='hasTwoPeriods'&&el.checked){
-            if(!o.checkIn2)o.checkIn2=o.checkOut||today();
-            if(!o.checkOut2){
-              const d=new Date(`${o.checkIn2||today()}T12:00:00`);
-              d.setDate(d.getDate()+2);
-              o.checkOut2=localISODate(d);
-            }
-          }
-        }else{
-          o[key]=el.value;
-        }
+      if(el.tagName!=='SELECT')el.addEventListener('input',()=>{
+        o[key]=el.value;
         updateOfferCardSummary(card,o);
-        if(['checkIn','checkOut','checkIn2','checkOut2'].includes(key)){
-          if(key==='checkIn'&&o.checkOut&&o.checkOut<=o.checkIn){
-            const d=new Date(`${o.checkIn}T12:00:00`);
-            d.setDate(d.getDate()+1);
-            o.checkOut=localISODate(d);
-          }
-          if(key==='checkIn2'&&o.checkOut2&&o.checkOut2<=o.checkIn2){
-            const d=new Date(`${o.checkIn2}T12:00:00`);
-            d.setDate(d.getDate()+1);
-            o.checkOut2=localISODate(d);
-          }
-          persist();
-          renderPreview();
-        } else autoSave();
+        updateCostingSummary(card,o);
+        autoSave();
       });
       el.addEventListener('change',()=>{
-        if(el.type==='checkbox'){
-          o[key]=el.checked;
-          if(key==='hasTwoPeriods'&&el.checked){
-            if(!o.checkIn2)o.checkIn2=o.checkOut||today();
-            if(!o.checkOut2){
-              const d=new Date(`${o.checkIn2||today()}T12:00:00`);
-              d.setDate(d.getDate()+2);
-              o.checkOut2=localISODate(d);
-            }
-          }
-        }else{
-          o[key]=el.value;
-        }
-        if(key==='checkIn'&&o.checkOut&&o.checkOut<=o.checkIn){
-          const d=new Date(`${o.checkIn}T12:00:00`);
-          d.setDate(d.getDate()+1);
-          o.checkOut=localISODate(d);
-        }
-        if(key==='checkIn2'&&o.checkOut2&&o.checkOut2<=o.checkIn2){
-          const d=new Date(`${o.checkIn2}T12:00:00`);
-          d.setDate(d.getDate()+1);
-          o.checkOut2=localISODate(d);
-        }
-        if(['roomType','checkIn','checkOut'].includes(key))applyRate(o);
-        if(needsRebuild)refresh();
-        else commitWithoutRebuild();
+        o[key]=el.value;
+        if(key==='roomType')applyRate(o);
+        if(['pricingMode','roomType','roomCount'].includes(key))refresh();
+        else commitClientFields();
       });
     });
+
+    const multipleToggle=card.querySelector('[data-multiple-periods]');
+    if(multipleToggle)multipleToggle.addEventListener('change',()=>{
+      o.hasMultiplePeriods=multipleToggle.checked;
+      if(o.hasMultiplePeriods&&o.periods.length<2)o.periods.push(nextPeriodAfter(o.periods[0]));
+      syncSupplierCostPeriods(o);
+      refresh();
+    });
+
+    card.querySelectorAll('[data-period-key]').forEach(el=>{
+      const period=o.periods.find(item=>item.id===el.dataset.periodId);
+      if(!period)return;
+      const key=el.dataset.periodKey;
+      el.addEventListener('input',()=>{
+        period[key]=el.value;
+        updateOfferCardSummary(card,o);
+        updateCostingSummary(card,o);
+        autoSave();
+      });
+      el.addEventListener('change',()=>{
+        period[key]=el.value;
+        if(key==='checkIn'&&period.checkOut&&period.checkOut<=period.checkIn)period.checkOut=addDaysISO(period.checkIn,1);
+        if(key==='checkIn')applyRateToPeriod(o,period,true);
+        refresh();
+      });
+    });
+
+    const addPeriodBtn=card.querySelector('[data-add-period]');
+    if(addPeriodBtn)addPeriodBtn.onclick=()=>{
+      const period=nextPeriodAfter(o.periods[o.periods.length-1]);
+      o.periods.push(period);
+      o.hasMultiplePeriods=true;
+      applyRateToPeriod(o,period,true);
+      syncSupplierCostPeriods(o);
+      refresh();
+      toast(`تمت إضافة ${periodLabel(o.periods.length-1)}`);
+    };
+
+    card.querySelectorAll('[data-remove-period]').forEach(btn=>btn.onclick=()=>{
+      if(o.periods.length<=2){toast('يجب وجود فترتين على الأقل عند تفعيل التقسيم');return}
+      const index=o.periods.findIndex(period=>period.id===btn.dataset.removePeriod);
+      if(index<0)return;
+      if(!confirm(`حذف ${periodLabel(index)} وأسعار التكلفة المرتبطة بها؟`))return;
+      o.periods.splice(index,1);
+      syncSupplierCostPeriods(o);
+      refresh();
+    });
+
+    const costDetails=card.querySelector('[data-cost-details]');
+    if(costDetails)costDetails.addEventListener('toggle',()=>{
+      o.costingOpen=costDetails.open;
+      persist();
+    });
+
+    const addSupplierBtn=card.querySelector('[data-add-supplier]');
+    if(addSupplierBtn)addSupplierBtn.onclick=()=>{
+      o.supplierQuotes.push(defaultSupplierQuote(o.periods));
+      o.costingOpen=true;
+      refresh(false);
+      toast('تمت إضافة شركة أخرى للمقارنة');
+    };
+
+    card.querySelectorAll('[data-remove-supplier]').forEach(btn=>btn.onclick=()=>{
+      if(o.supplierQuotes.length<=1){toast('يجب وجود خانة شركة واحدة على الأقل');return}
+      const quote=o.supplierQuotes.find(item=>item.id===btn.dataset.removeSupplier);
+      if(!quote)return;
+      if(!confirm(`حذف سعر ${quote.companyName||'هذه الشركة'}؟`))return;
+      o.supplierQuotes=o.supplierQuotes.filter(item=>item.id!==quote.id);
+      o.costingOpen=true;
+      refresh(false);
+    });
+
+    card.querySelectorAll('[data-supplier-key]').forEach(el=>el.addEventListener('input',()=>{
+      const quote=o.supplierQuotes.find(item=>item.id===el.dataset.supplierId);
+      if(!quote)return;
+      quote[el.dataset.supplierKey]=el.value;
+      persist();
+    }));
+
+    card.querySelectorAll('[data-cost-key]').forEach(el=>el.addEventListener('input',()=>{
+      const quote=o.supplierQuotes.find(item=>item.id===el.dataset.supplierId);
+      const period=quote?.periods.find(item=>item.periodId===el.dataset.costPeriodId);
+      if(!period)return;
+      period[el.dataset.costKey]=el.value;
+      persist();
+      updateCostingSummary(card,o);
+    }));
   });
 
   wrap.querySelectorAll('[data-move-up]').forEach(btn=>btn.onclick=()=>moveOfferUp(btn.dataset.moveUp));
@@ -835,31 +1166,20 @@ function renderOffers(){
   });
 }
 
-function previewPricePeriod(o, pStats, periodNum, currency) {
-  const isP2 = periodNum === 2;
-  const kNightly = isP2 ? 'nightlyPrice2' : 'nightlyPrice';
-  const kWeekday = isP2 ? 'weekdayPrice2' : 'weekdayPrice';
-  const kWeekend = isP2 ? 'weekendPrice2' : 'weekendPrice';
-  const kTotal = isP2 ? 'totalPrice2' : 'totalPrice';
-
-  if (o.pricingMode === 'weekdayWeekend') {
-    const wd = o[kWeekday] || (isP2 ? o.weekdayPrice : '');
-    const we = o[kWeekend] || (isP2 ? o.weekendPrice : '');
-    return `وسط الأسبوع: ${money(wd)} × ${pStats.weekday} · ويك إند: ${money(we)} × ${pStats.weekend}`;
+function periodPriceText(o,period,pStats,currency){
+  if(o.pricingMode==='weekdayWeekend'){
+    return`وسط الأسبوع: ${money(period.weekdayPrice)} ${currency} × ${pStats.weekday} · ويك إند: ${money(period.weekendPrice)} ${currency} × ${pStats.weekend}`;
   }
-  if (o.pricingMode === 'total') {
-    return `السعر الكامل: ${money(o[kTotal])} ${esc(currency)}`;
-  }
-  return `سعر الليلة: ${money(o[kNightly])} ${esc(currency)}`;
+  if(o.pricingMode==='total')return`السعر الكامل: ${money(period.totalPrice)} ${currency}`;
+  return`سعر الليلة: ${money(period.nightlyPrice)} ${currency}`;
 }
 
 function previewPrice(o,s){
-  if(o.hasTwoPeriods && s.p1 && s.p2) {
-    return `إجمالي الفترتين (${nightsText(s.nights)})`;
-  }
-  if(o.pricingMode==='weekdayWeekend')return`وسط الأسبوع: ${money(o.weekdayPrice)} × ${s.weekday} · نهاية الأسبوع: ${money(o.weekendPrice)} × ${s.weekend}`;
-  if(o.pricingMode==='total')return`السعر الكامل للمدة: ${money(o.totalPrice)} ${esc(app.draft.currency)}`;
-  return`سعر الليلة: ${money(o.nightlyPrice)} ${esc(app.draft.currency)}`;
+  const periods=activePeriods(o),period=periods[0]||defaultPeriod();
+  if(periods.length>1)return`إجمالي ${periods.length} فترات (${nightsText(s.nights)})`;
+  if(o.pricingMode==='weekdayWeekend')return`وسط الأسبوع: ${money(period.weekdayPrice)} × ${s.weekday} · نهاية الأسبوع: ${money(period.weekendPrice)} × ${s.weekend}`;
+  if(o.pricingMode==='total')return`السعر الكامل للمدة: ${money(period.totalPrice)} ${esc(app.draft.currency)}`;
+  return`سعر الليلة: ${money(period.nightlyPrice)} ${esc(app.draft.currency)}`;
 }
 
 function grandTotalHtml(q){
@@ -923,7 +1243,7 @@ function previewClosingHtml(q){
 }
 
 function previewOfferHtml(o,globalIndex,q){
-  const st=stats(o);
+  const st=stats(o),periods=activePeriods(o),first=periods[0]||defaultPeriod();
   const isLast=globalIndex===q.items.length-1;
   const extraBedStr=num(o.extraBed)>0?`<br><small>السرير الإضافي: ${money(o.extraBed)} ${esc(q.currency)}</small>`:'';
   const notesStr=o.notes?`<br><small>${esc(o.notes)}</small>`:'';
@@ -935,19 +1255,23 @@ function previewOfferHtml(o,globalIndex,q){
       </div>`:'';
   const totalLineStyle=st.rooms>1?'border-top:2px solid var(--gold);padding-top:8px;margin-top:4px;':'';
   const grandTotalSection=isLast?grandTotalHtml(q):'';
+  const periodsBlock=periods.length>1?`<div class="preview-periods">${periods.map((period,index)=>{
+    const calculated=st.periods[index]||calculatePeriodStats(period.checkIn,period.checkOut,o.pricingMode,period);
+    return`<div class="preview-period-row"><span class="preview-period-label">${periodLabel(index)}</span><span class="preview-period-dates">من ${dateLabel(period.checkIn)} إلى ${dateLabel(period.checkOut)} · ${nightsText(calculated.nights)}</span><span class="preview-period-pricing">${esc(periodPriceText(o,period,calculated,q.currency))}</span><b>${money(calculated.totalPerRoom)} ${esc(q.currency)}</b></div>`;
+  }).join('')}</div>`:'';
   return`<section class="preview-offer" data-offer-index="${globalIndex}">
     <div class="preview-offer-head"><span>${q.items.length>1?`الخيار ${globalIndex+1}`:`تفاصيل الإقامة`}</span><span>${nightsText(st.nights)}${st.rooms>1?` · ${st.rooms} غرف`:''}</span></div>
     <div class="preview-offer-body">
       <div class="hotel-name">${esc(o.hotelName||'اسم الفندق')}</div>
       <div class="detail-grid">
-        <div class="detail"><b>الدخول</b><span>${dateLabel(o.checkIn)}</span></div>
-        <div class="detail"><b>الخروج</b><span>${dateLabel(o.checkOut)}</span></div>
+        ${periods.length===1?`<div class="detail"><b>الدخول</b><span>${dateLabel(first.checkIn)}</span></div><div class="detail"><b>الخروج</b><span>${dateLabel(first.checkOut)}</span></div>`:''}
         <div class="detail"><b>الغرفة</b><span>${esc(o.roomType||'—')}</span></div>
         <div class="detail"><b>الوجبة</b><span>${esc(o.mealPlan||'—')}</span></div>
         <div class="detail"><b>الإطلالة</b><span>${esc(o.view||'—')}</span></div>
         <div class="detail"><b>توزيع الليالي</b><span>${st.weekday} وسط الأسبوع · ${st.weekend} ويك إند</span></div>
         ${roomsLabel}
       </div>
+      ${periodsBlock}
       ${perRoomLine}
       <div class="price-line" style="${totalLineStyle}">
         <span>${st.rooms>1?`<b>الإجمالي الكلي (${st.rooms} غرف)</b>`:previewPrice(o,st)}${st.rooms>1?`<br><small>${previewPrice(o,st)} × ${st.rooms}</small>`:''}${extraBedStr}${notesStr}</span>
@@ -1223,15 +1547,18 @@ function clearDraft(confirmReset=true){
 function quoteText(){
   const q=app.draft,lines=[`عزيزي العميل / ${q.customerName||'................'}`,q.intro,''];
   q.items.forEach((o,i)=>{
-    const s=stats(o);
+    const s=stats(o),periods=activePeriods(o),first=periods[0]||defaultPeriod();
     if(q.items.length > 1) lines.push(`الخيار ${i+1}:`);
-    if(o.hasTwoPeriods && s.p1 && s.p2){
+    lines.push(`الفندق: ${o.hotelName||'—'}`);
+    if(periods.length>1){
+      periods.forEach((period,index)=>{
+        const periodStats=s.periods[index];
+        lines.push(
+          `${periodLabel(index)}: من ${dateLabel(period.checkIn)} إلى ${dateLabel(period.checkOut)} (${nightsText(periodStats.nights)})`,
+          `سعر ${periodLabel(index)}: ${periodPriceText(o,period,periodStats,q.currency)}`
+        );
+      });
       lines.push(
-        `الفندق: ${o.hotelName||'—'}`,
-        `فترة الإقامة الأولى: من ${dateLabel(o.checkIn)} إلى ${dateLabel(o.checkOut)} (${nightsText(s.p1.nights)})`,
-        `سعر الفترة الأولى: ${previewPricePeriod(o, s.p1, 1, q.currency)}`,
-        `فترة الإقامة الثانية: من ${dateLabel(o.checkIn2)} إلى ${dateLabel(o.checkOut2)} (${nightsText(s.p2.nights)})`,
-        `سعر الفترة الثانية: ${previewPricePeriod(o, s.p2, 2, q.currency)}`,
         `إجمالي عدد الليالي: ${nightsText(s.nights)}`,
         `نوع الغرفة: ${o.roomType||'—'}`,
         `نوع الوجبة: ${o.mealPlan||'—'}`,
@@ -1240,9 +1567,8 @@ function quoteText(){
       );
     }else{
       lines.push(
-        `الفندق: ${o.hotelName||'—'}`,
-        `الدخول: ${dateLabel(o.checkIn)}`,
-        `الخروج: ${dateLabel(o.checkOut)}`,
+        `الدخول: ${dateLabel(first.checkIn)}`,
+        `الخروج: ${dateLabel(first.checkOut)}`,
         `نوع الغرفة: ${o.roomType||'—'}`,
         `نوع الوجبة: ${o.mealPlan||'—'}`,
         `الإطلالة: ${o.view||'—'}`,
@@ -1250,11 +1576,11 @@ function quoteText(){
         `عدد الغرف: ${s.rooms}`
       );
       if(o.pricingMode==='weekdayWeekend')
-        lines.push(`سعر وسط الأسبوع: ${money(o.weekdayPrice)} ${q.currency} × ${s.weekday}`,`سعر نهاية الأسبوع: ${money(o.weekendPrice)} ${q.currency} × ${s.weekend}`);
+        lines.push(`سعر وسط الأسبوع: ${money(first.weekdayPrice)} ${q.currency} × ${s.weekday}`,`سعر نهاية الأسبوع: ${money(first.weekendPrice)} ${q.currency} × ${s.weekend}`);
       else if(o.pricingMode==='total')
-        lines.push(`السعر الكامل للمدة: ${money(o.totalPrice)} ${q.currency}`);
+        lines.push(`السعر الكامل للمدة: ${money(first.totalPrice)} ${q.currency}`);
       else
-        lines.push(`سعر الليلة: ${money(o.nightlyPrice)} ${q.currency}`);
+        lines.push(`سعر الليلة: ${money(first.nightlyPrice)} ${q.currency}`);
     }
     
     if(num(o.extraBed)>0)
