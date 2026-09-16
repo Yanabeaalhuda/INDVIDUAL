@@ -65,6 +65,7 @@ input,select,textarea,button{font-family:'ExpoArabic','HelveticaBold',Arial,sans
 .multi-period-toggle{grid-column:1/-1;background:#faf4f6;padding:11px 14px;border-radius:11px;border:1px solid #ebd9de;display:flex;align-items:center}
 .multi-period-toggle label{margin:0;cursor:pointer;display:flex;align-items:center;gap:9px;font-weight:700;color:var(--burg);font-size:12px}
 .multi-period-toggle input{width:18px;height:18px;accent-color:var(--burg);flex:0 0 auto}
+.hotel-search-field{position:relative;z-index:8}.hotel-combobox{position:relative}.hotel-combobox>input{padding-inline-end:38px}.hotel-search-clear{position:absolute;inset-inline-end:7px;top:50%;transform:translateY(-50%);width:27px;height:27px;border:0;border-radius:50%;background:#f3e6ea;color:var(--burg);font-size:19px;line-height:1;display:grid;place-items:center;z-index:2}.hotel-search-clear[hidden]{display:none}.hotel-search-help{display:block;color:var(--muted);font-size:10px;line-height:1.45;margin-top:5px}.hotel-suggestions{position:absolute;z-index:140;top:calc(100% + 6px);inset-inline:0;max-height:335px;overflow:auto;background:#fff;border:1px solid #d8c5cb;border-radius:12px;box-shadow:0 14px 34px rgba(55,12,25,.2);padding:5px}.hotel-suggestions[hidden]{display:none}.hotel-suggestion{width:100%;border:0;background:#fff;border-radius:9px;padding:9px 10px;display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:start;color:var(--ink)}.hotel-suggestion:hover,.hotel-suggestion.active{background:#f7edf0}.hotel-suggestion-copy{min-width:0;display:grid;gap:2px}.hotel-suggestion-copy strong{font-size:12px;color:var(--burg);white-space:normal}.hotel-suggestion-copy small{font-size:10px;color:var(--muted);direction:auto}.hotel-rate-badge{flex:0 0 auto;border-radius:999px;padding:3px 7px;font-size:8.5px;font-weight:700}.hotel-rate-badge.priced{background:#e7f4e9;color:#286936}.hotel-rate-badge.catalog{background:#f5ecde;color:#79541b}.hotel-no-results{padding:17px 10px;text-align:center;color:var(--muted);font-size:11px}.auth-language-toggle{margin-bottom:10px;width:100%}.language-toggle{background:rgba(255,255,255,.1)!important;color:#fff!important;border-color:rgba(255,255,255,.5)!important}.language-en .costing-roll>summary::after{margin-right:0;margin-left:auto}.language-en .cost-period-title span{direction:ltr}.language-en .grand-total-preview textarea{direction:ltr;text-align:left}.quote-page[dir="ltr"] .greeting{border-right:0;border-left:5px solid var(--gold)}.quote-page[dir="ltr"] .quote-date{text-align:right}.quote-page[dir="ltr"] .preview-period-row,.quote-page[dir="ltr"] .price-line{text-align:left}
 .periods-editor{grid-column:1/-1;display:grid;gap:10px}.periods-list{display:grid;gap:10px}
 .stay-period-card{background:#fff9fb;padding:12px;border-radius:12px;border:1px solid #efd5dd}.stay-period-card:nth-child(even){background:#f7f9fd;border-color:#d9e1ec}
 .stay-period-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;color:var(--burg);font-size:13px}
@@ -127,10 +128,129 @@ input,select,textarea,button{font-family:'ExpoArabic','HelveticaBold',Arial,sans
 .toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,120px);background:#27131a;color:#fff;border-radius:12px;padding:11px 16px;opacity:0;transition:.25s;z-index:200;box-shadow:0 10px 30px rgba(0,0,0,.24)}.toast.show{transform:translate(-50%,0);opacity:1}
 .mobile-tabs{display:none}
 
+.backup-card{margin-top:14px;border:1.5px dashed #c9a9b5;border-radius:14px;padding:14px 16px;background:linear-gradient(135deg,#fffdf9,#fef8f3)}
+.backup-card-title{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.backup-card-title h4{margin:0;color:var(--burg);font-size:13px;font-family:'GESSTwo','ExpoArabic',Arial,sans-serif}
+.backup-card-desc{font-size:11px;color:var(--muted);margin-bottom:12px;line-height:1.6}
+.backup-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.backup-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:12px 10px;border-radius:12px;cursor:pointer;transition:all .18s;border:0;font-family:'ExpoArabic','HelveticaBold',Arial,sans-serif;font-size:12px;font-weight:700;text-align:center;line-height:1.4}
+.backup-btn-icon{font-size:20px;line-height:1}
+.backup-btn.export-btn{background:linear-gradient(135deg,#5b091d,#7d1531);color:#fff;box-shadow:0 4px 14px rgba(107,13,36,.22)}
+.backup-btn.export-btn:hover{background:linear-gradient(135deg,#7d1531,#9c1e42);box-shadow:0 6px 18px rgba(107,13,36,.3);transform:translateY(-1px)}
+.backup-btn.import-btn{background:#fff;border:1.5px solid #c9a9b5;color:var(--burg)}
+.backup-btn.import-btn:hover{background:#fef0f4;border-color:var(--burg);transform:translateY(-1px)}
+
+.grand-total-panel{}
+.grand-total-toggle-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.grand-total-toggle-label{display:inline-flex;align-items:center;gap:8px;cursor:pointer;user-select:none;font-size:13px;color:#583640;font-weight:700}
+.grand-total-toggle-label input[type=checkbox]{width:18px;height:18px;accent-color:#6b0d24;cursor:pointer;margin:0;flex-shrink:0}
+.grand-total-preview{margin-top:13px;display:none}
+.grand-total-preview.visible{display:block}
+.grand-total-preview-label{font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:700}
+.grand-total-preview textarea{width:100%;min-height:90px;padding:10px 12px;border:1.5px solid #c9b4bb;border-radius:10px;background:#faf6f7;font-family:'ExpoArabic','HelveticaBold',Arial,sans-serif;font-size:12px;color:#32151e;resize:vertical;line-height:1.9;direction:rtl}
+
 
 .quote-page{font-family:'ExpoArabic','HelveticaBold',Tahoma,Arial,sans-serif;font-synthesis:none}
 .quote-page .quote-title h1,.quote-page .quote-title p,.quote-page .greeting b,.quote-page .preview-offer-head,.quote-page .hotel-name,.quote-page .detail b,.quote-page .closing b{font-family:'GESSTwo','ExpoArabic',Tahoma,Arial,sans-serif;font-synthesis:none}
 .quote-page .price-line b,.quote-page .quote-date,.quote-page .phones{font-family:'HelveticaRounded','HelveticaBold','ExpoArabic',Tahoma,Arial,sans-serif;font-synthesis:none}
+
+/* Dynamic Density Modes for 1 to 8 offers (Max 2 Pages) */
+/* SPACIOUS (1 Offer) */
+.quote-page[data-density="spacious"] .quote-header { height:140px; padding:22px 28px; grid-template-columns:98px 1fr 140px; }
+.quote-page[data-density="spacious"] .quote-header img { width:98px; height:98px; }
+.quote-page[data-density="spacious"] .quote-title h1 { font-size:32px; }
+.quote-page[data-density="spacious"] .quote-title p { font-size:16px; margin-top:8px; }
+.quote-page[data-density="spacious"] .quote-body { padding:32px 38px 125px; }
+.quote-page[data-density="spacious"] .greeting { font-size:15.5px; padding:15px 18px; line-height:2.0; margin-bottom:20px; }
+.quote-page[data-density="spacious"] .preview-offer { margin-bottom:20px; border-radius:18px; }
+.quote-page[data-density="spacious"] .preview-offer-head { padding:13px 18px; font-size:16px; }
+.quote-page[data-density="spacious"] .preview-offer-body { padding:18px 20px; }
+.quote-page[data-density="spacious"] .hotel-name { font-size:23px; margin-bottom:12px; }
+.quote-page[data-density="spacious"] .detail-grid { gap:10px; }
+.quote-page[data-density="spacious"] .detail { padding:9px; }
+.quote-page[data-density="spacious"] .detail b { font-size:11px; margin-bottom:4px; }
+.quote-page[data-density="spacious"] .detail span { font-size:13.5px; }
+.quote-page[data-density="spacious"] .price-line { margin-top:14px; padding-top:12px; font-size:14px; }
+.quote-page[data-density="spacious"] .price-line b { font-size:21px; }
+.quote-page[data-density="spacious"] .closing { padding:15px 18px; font-size:14px; line-height:2.0; }
+
+/* NORMAL (2 Offers) */
+.quote-page[data-density="normal"] .quote-header { height:132px; padding:20px 24px; }
+.quote-page[data-density="normal"] .quote-header img { width:92px; height:92px; }
+.quote-page[data-density="normal"] .quote-title h1 { font-size:30px; }
+.quote-page[data-density="normal"] .quote-body { padding:26px 34px 125px; }
+.quote-page[data-density="normal"] .greeting { font-size:14px; padding:13px 16px; line-height:1.9; margin-bottom:16px; }
+.quote-page[data-density="normal"] .preview-offer { margin-bottom:14px; border-radius:16px; }
+.quote-page[data-density="normal"] .preview-offer-head { padding:11px 16px; font-size:14px; }
+.quote-page[data-density="normal"] .preview-offer-body { padding:14px 16px; }
+.quote-page[data-density="normal"] .hotel-name { font-size:20px; margin-bottom:10px; }
+.quote-page[data-density="normal"] .detail-grid { gap:8px; }
+.quote-page[data-density="normal"] .detail { padding:8px; }
+.quote-page[data-density="normal"] .detail b { font-size:10px; }
+.quote-page[data-density="normal"] .detail span { font-size:12.5px; }
+.quote-page[data-density="normal"] .price-line { margin-top:10px; padding-top:10px; font-size:13px; }
+.quote-page[data-density="normal"] .price-line b { font-size:18px; }
+.quote-page[data-density="normal"] .closing { padding:13px 15px; font-size:13px; line-height:1.9; }
+
+/* COMPACT (3 Offers) */
+.quote-page[data-density="compact"] .quote-header { height:116px; padding:14px 20px; grid-template-columns:76px 1fr 130px; }
+.quote-page[data-density="compact"] .quote-header img { width:76px; height:76px; }
+.quote-page[data-density="compact"] .quote-title h1 { font-size:25px; }
+.quote-page[data-density="compact"] .quote-title p { font-size:13.5px; margin-top:4px; }
+.quote-page[data-density="compact"] .quote-body { padding:18px 26px 115px; }
+.quote-page[data-density="compact"] .greeting { font-size:12.5px; padding:9px 13px; line-height:1.7; margin-bottom:12px; }
+.quote-page[data-density="compact"] .preview-offer { margin-bottom:10px; border-radius:13px; }
+.quote-page[data-density="compact"] .preview-offer-head { padding:8px 13px; font-size:13px; }
+.quote-page[data-density="compact"] .preview-offer-body { padding:10px 13px; }
+.quote-page[data-density="compact"] .hotel-name { font-size:17.5px; margin-bottom:6px; }
+.quote-page[data-density="compact"] .detail-grid { gap:6px; grid-template-columns:repeat(3,1fr); }
+.quote-page[data-density="compact"] .detail { padding:6px; }
+.quote-page[data-density="compact"] .detail b { font-size:9.5px; margin-bottom:2px; }
+.quote-page[data-density="compact"] .detail span { font-size:11.5px; }
+.quote-page[data-density="compact"] .price-line { margin-top:7px; padding-top:7px; font-size:12px; }
+.quote-page[data-density="compact"] .price-line b { font-size:16px; }
+.quote-page[data-density="compact"] .closing { padding:9px 12px; font-size:12px; line-height:1.7; }
+.quote-page[data-density="compact"] .grand-total-block { margin-top:9px; }
+
+/* DENSE (4-5 Offers) */
+.quote-page[data-density="dense"] .quote-header { height:100px; padding:10px 18px; grid-template-columns:64px 1fr 120px; }
+.quote-page[data-density="dense"] .quote-header img { width:64px; height:64px; }
+.quote-page[data-density="dense"] .quote-title h1 { font-size:22px; }
+.quote-page[data-density="dense"] .quote-title p { font-size:12px; margin-top:2px; }
+.quote-page[data-density="dense"] .quote-body { padding:12px 20px 110px; }
+.quote-page[data-density="dense"] .greeting { font-size:11.5px; padding:7px 11px; line-height:1.5; margin-bottom:8px; }
+.quote-page[data-density="dense"] .preview-offer { margin-bottom:7px; border-radius:11px; }
+.quote-page[data-density="dense"] .preview-offer-head { padding:6px 11px; font-size:12px; }
+.quote-page[data-density="dense"] .preview-offer-body { padding:8px 11px; }
+.quote-page[data-density="dense"] .hotel-name { font-size:15px; margin-bottom:4px; }
+.quote-page[data-density="dense"] .detail-grid { gap:4px; grid-template-columns:repeat(4,1fr); }
+.quote-page[data-density="dense"] .detail { padding:4px 6px; }
+.quote-page[data-density="dense"] .detail b { font-size:8.5px; margin-bottom:1px; }
+.quote-page[data-density="dense"] .detail span { font-size:10.5px; }
+.quote-page[data-density="dense"] .price-line { margin-top:5px; padding-top:5px; font-size:11px; }
+.quote-page[data-density="dense"] .price-line b { font-size:14.5px; }
+.quote-page[data-density="dense"] .closing { padding:7px 10px; font-size:11px; line-height:1.5; }
+.quote-page[data-density="dense"] .grand-total-block { margin-top:6px; }
+
+/* MICRO (6-8 Offers) */
+.quote-page[data-density="micro"] .quote-header { height:88px; padding:8px 14px; grid-template-columns:54px 1fr 110px; }
+.quote-page[data-density="micro"] .quote-header img { width:54px; height:54px; }
+.quote-page[data-density="micro"] .quote-title h1 { font-size:19px; }
+.quote-page[data-density="micro"] .quote-title p { font-size:11px; margin-top:1px; }
+.quote-page[data-density="micro"] .quote-body { padding:8px 16px 100px; }
+.quote-page[data-density="micro"] .greeting { font-size:10.5px; padding:5px 9px; line-height:1.4; margin-bottom:5px; }
+.quote-page[data-density="micro"] .preview-offer { margin-bottom:5px; border-radius:9px; }
+.quote-page[data-density="micro"] .preview-offer-head { padding:4px 9px; font-size:11px; }
+.quote-page[data-density="micro"] .preview-offer-body { padding:6px 9px; }
+.quote-page[data-density="micro"] .hotel-name { font-size:13.5px; margin-bottom:3px; }
+.quote-page[data-density="micro"] .detail-grid { gap:3px; grid-template-columns:repeat(4,1fr); }
+.quote-page[data-density="micro"] .detail { padding:3px 5px; }
+.quote-page[data-density="micro"] .detail b { font-size:8px; margin-bottom:1px; }
+.quote-page[data-density="micro"] .detail span { font-size:9.5px; }
+.quote-page[data-density="micro"] .price-line { margin-top:3px; padding-top:3px; font-size:10px; }
+.quote-page[data-density="micro"] .price-line b { font-size:13px; }
+.quote-page[data-density="micro"] .closing { padding:5px 8px; font-size:10px; line-height:1.4; }
+.quote-page[data-density="micro"] .grand-total-block { margin-top:4px; }
 
 .quote-measure-root{position:fixed;top:0;left:-10000px;width:794px;height:1123px;visibility:hidden;pointer-events:none;overflow:hidden;z-index:-1}
 .quote-measure-root .quote-page{transform:none!important;box-shadow:none!important}
@@ -167,7 +287,7 @@ input,select,textarea,button{font-family:'ExpoArabic','HelveticaBold',Arial,sans
   .section-head{align-items:stretch;flex-direction:column;gap:8px}
   .section-head .btn{width:100%}
   .preview-stage{padding:10px 4px}
-  .mobile-tabs{position:fixed;z-index:100;bottom:0;left:0;right:0;height:60px;background:#fff;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(3,1fr);box-shadow:0 -5px 22px rgba(70,12,30,.12)}
+  .mobile-tabs{position:fixed;z-index:100;bottom:0;left:0;right:0;height:60px;background:#fff;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);box-shadow:0 -5px 22px rgba(70,12,30,.12)}
   .mobile-tabs button{border:0;background:#fff;color:#71545d;font-size:11px;font-weight:700}
   .mobile-tabs button.active{color:var(--burg);background:#fff6f7}
   .column.mobile-hidden{display:none!important}
@@ -382,11 +502,48 @@ body.auth-locked .mobile-tabs {
     </div>
   </div>
   <div class="panel"><div class="section-head"><div><h3>خيارات الإقامة</h3></div><div class="actions"><button class="btn primary" id="addOffer">+ إضافة خيار</button></div></div><div id="offers"></div></div>
+  <div class="panel grand-total-panel" id="grandTotalPanel">
+    <div class="grand-total-toggle-row">
+      <div>
+        <h3 style="margin:0;color:var(--burg)">&#x2211; الإجمالي الكلي</h3>
+        <p class="panel-sub" style="margin-top:4px">تفعيل هذا الخيار سيضيف ملخص إجمالي لجميع الغرف والسعر في المعاينة ورسالة الواتسآب</p>
+      </div>
+      <label class="grand-total-toggle-label" for="grandTotalToggle">
+        <input type="checkbox" id="grandTotalToggle">
+        <span>تفعيل</span>
+      </label>
+    </div>
+    <div class="grand-total-preview" id="grandTotalPreview">
+      <p class="grand-total-preview-label">👀 معاينة نص الإجمالي كما سيظهر في رسالة الواتسآب:</p>
+      <textarea id="grandTotalPreviewText" readonly></textarea>
+    </div>
+  </div>
   <div class="panel"><h3>الرسالة والملاحظات</h3><div class="grid two" style="margin-top:12px"><div class="field"><label>ملاحظة الأسعار</label><textarea id="notes"></textarea></div><div class="field"><label>رسالة الختام</label><textarea id="closing"></textarea></div></div><div class="actions" style="margin-top:13px"><button class="btn primary" id="copyText">نسخ رسالة واتساب</button><button class="btn gold" id="saveQuote">حفظ العرض</button><button class="btn outline" id="newQuote">عرض جديد</button></div></div>
-  <div class="panel" id="savedPanel"><div class="section-head"><div><h3>العروض المحفوظة</h3></div><div class="actions"><button class="btn outline small" id="exportBackup">حفظ نسخة احتياطية</button><label class="btn light small" for="importBackup">رفع نسخة احتياطية</label><input id="importBackup" type="file" accept="application/json" hidden></div></div><div id="savedList"></div></div>
+  <div class="panel" id="savedPanel"><div class="section-head"><div><h3>العروض المحفوظة</h3></div></div><div id="savedList"></div>
+    <div class="backup-card">
+      <div class="backup-card-title">
+        <span style="font-size:18px">💾</span>
+        <h4>حفظ واستعادة العروض</h4>
+      </div>
+      <p class="backup-card-desc">يمكنك تنزيل جميع العروض المحفوظة كملف JSON على جهازك، تحتياطًا أو للنقل بين الأجهزة. وعند الحاجة يمكنك رفع الملف واستعادة كل العروض دفعة واحدة.</p>
+      <div class="backup-actions">
+        <button class="backup-btn export-btn" id="exportBackup" type="button">
+          <span class="backup-btn-icon">⬇️</span>
+          <span>تنزيل العروض</span>
+          <span style="font-size:10px;opacity:.85;font-weight:400">حفظ نسخة احتياطية على الجهاز</span>
+        </button>
+        <label class="backup-btn import-btn" for="importBackup">
+          <span class="backup-btn-icon">⬆️</span>
+          <span>استعادة العروض</span>
+          <span style="font-size:10px;opacity:.85;font-weight:400">رفع ملف النسخة الاحتياطية</span>
+          <input id="importBackup" type="file" accept="application/json" hidden>
+        </label>
+      </div>
+    </div>
+  </div>
   <div class="panel" id="settingsPanel"><h3>إعدادات الشركة</h3><div class="grid two" style="margin-top:12px"><div class="field"><label>اسم الشركة</label><input id="companyName"></div><div class="field"><label>وصف الخدمة</label><input id="companyLine"></div><div class="field" style="grid-column:1/-1"><label>أرقام التواصل (افصل بينها بفاصلة)</label><input id="phones" dir="ltr" inputmode="tel" style="text-align:right;unicode-bidi:plaintext"></div></div><div class="font-settings"><h4>خطوط المعاينة وملف PDF</h4><p class="panel-sub">الخطوط الأصلية مدمجة داخل المشروع وتعمل تلقائيًا على GitHub وفي المعاينة وملف PDF. ويمكن رفع خط بديل على هذا الجهاز عند الحاجة.</p><div class="grid two" style="margin-top:10px"><div class="font-upload-card"><strong>Expo Arabic — النصوص</strong><div class="actions"><label class="btn light small">رفع خط بديل<input id="fontUploadExpo" type="file" accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff,font/woff2" hidden></label><button class="btn outline small" type="button" data-reset-font="expo">الرجوع للمدمج</button></div><div class="font-file-name" id="fontNameExpo">لم يتم رفع ملف</div></div><div class="font-upload-card"><strong>GE SS Two — العناوين</strong><div class="actions"><label class="btn light small">رفع خط بديل<input id="fontUploadGess" type="file" accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff,font/woff2" hidden></label><button class="btn outline small" type="button" data-reset-font="gess">الرجوع للمدمج</button></div><div class="font-file-name" id="fontNameGess">لم يتم رفع ملف</div></div><div class="font-upload-card"><strong>Helvetica Bold — النصوص البديلة</strong><div class="actions"><label class="btn light small">رفع خط بديل<input id="fontUploadHelveticaBold" type="file" accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff,font/woff2" hidden></label><button class="btn outline small" type="button" data-reset-font="helveticaBold">الرجوع للمدمج</button></div><div class="font-file-name" id="fontNameHelveticaBold">لم يتم رفع ملف</div></div><div class="font-upload-card"><strong>Helvetica Rounded — الأرقام والأسعار</strong><div class="actions"><label class="btn light small">رفع خط بديل<input id="fontUploadHelveticaRounded" type="file" accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff,font/woff2" hidden></label><button class="btn outline small" type="button" data-reset-font="helveticaRounded">الرجوع للمدمج</button></div><div class="font-file-name" id="fontNameHelveticaRounded">لم يتم رفع ملف</div></div></div></div><div class="actions" style="margin-top:12px"><button class="btn primary" id="saveSettings">حفظ الإعدادات</button><button class="btn danger" id="lockApp" type="button">قفل البرنامج (تسجيل الخروج)</button></div></div>
 </section>
-<section class="column preview-column" id="previewColumn"><div class="panel preview-panel preview-sticky"><div class="preview-tools"><div><h3>معاينة عرض السعر</h3></div><div class="actions"><button class="btn primary" id="downloadPdfQuote">حفظ PDF</button><button class="btn outline" id="printQuote">طباعة</button></div></div><div class="preview-stage"><div id="quotePages"></div></div></div></section>
+<section class="column preview-column" id="previewColumn"><div class="panel preview-panel preview-sticky"><div class="preview-tools"><div style="display:flex;align-items:center;gap:10px"><h3 style="margin:0">معاينة عرض السعر</h3><span id="densityBadge" style="font-size:11px;background:#fff8ea;border:1px solid #dfb667;color:#6a4508;border-radius:999px;padding:3px 10px;font-weight:700">1 صفحة</span></div><div class="actions"><button class="btn primary" id="downloadPdfQuote">حفظ PDF</button><button class="btn outline" id="printQuote">طباعة</button></div></div><div class="preview-stage"><div id="quotePages"></div></div></div></section>
 </main>
 <footer class="app-site-footer">
   <div class="footer-tagline">ينابيع الهدى... سكن مطمئن لرحلة مباركة</div>
@@ -397,6 +554,6 @@ body.auth-locked .mobile-tabs {
 <datalist id="hotelNames"></datalist><datalist id="roomTypes"></datalist><datalist id="mealPlans"></datalist><datalist id="views"></datalist>
 <script src="./vendor/html2canvas.min.js?v=27"></script>
 <script src="./vendor/jspdf.umd.min.js?v=27"></script>
-<script src="./app.js?v=40"></script>
+<script src="./app.js?v=41"></script>
 </body>
 </html>
