@@ -136,10 +136,10 @@ const AUTH_HASH='db031c72ba245b0d6de8febc3797849ada2e764fbd783251f21cd823da26388
 
 const I18N={
   ar:{
-    pageTitle:'ينابيع الهدى | عرض سعر للأفراد',appTitle:'عرض سعر للأفراد',authPrompt:'أدخل كلمة المرور لفتح البرنامج',passwordPlaceholder:'كلمة المرور',rememberPassword:'حفظ كلمة المرور دائما على هذا الجهاز',openApp:'فتح البرنامج',newQuote:'عرض جديد',saveQuote:'حفظ العرض',savePdf:'حفظ PDF',print:'طباعة',switchLanguage:'English',clearData:'مسح البيانات',quoteData:'بيانات عرض السعر',customerName:'اسم العميل',quoteDate:'تاريخ العرض',currency:'العملة',introMessage:'رسالة المقدمة',stayOptions:'خيارات الإقامة',addOption:'+ إضافة خيار',grandTotal:'∑ الإجمالي الكلي',grandHelp:'تفعيل هذا الخيار سيضيف ملخص إجمالي لجميع الغرف والسعر في المعاينة ورسالة الواتساب',enable:'تفعيل',grandPreview:'👀 معاينة نص الإجمالي كما سيظهر في رسالة الواتساب:',messagesNotes:'الرسالة والملاحظات',priceNote:'ملاحظة الأسعار',closingMessage:'رسالة الختام',copyWhatsApp:'نسخ رسالة واتساب',savedQuotes:'العروض المحفوظة',backupTitle:'حفظ واستعادة العروض',backupDesc:'يمكنك تنزيل جميع العروض المحفوظة كملف JSON على جهازك، للاحتياط أو للنقل بين الأجهزة. وعند الحاجة يمكنك رفع الملف واستعادة كل العروض دفعة واحدة.',downloadQuotes:'تنزيل العروض',localBackup:'حفظ نسخة احتياطية على الجهاز',restoreQuotes:'استعادة العروض',uploadBackup:'رفع ملف النسخة الاحتياطية',settings:'إعدادات الشركة',companyNameAr:'اسم الشركة بالعربية',companyNameEn:'اسم الشركة بالإنجليزية',companyLineAr:'وصف الخدمة بالعربية',companyLineEn:'وصف الخدمة بالإنجليزية',phones:'أرقام التواصل (افصل بينها بفاصلة)',previewFonts:'خطوط المعاينة وملف PDF',fontsHelp:'الخطوط الأصلية مدمجة داخل المشروع وتعمل تلقائيا في المعاينة وملف PDF. ويمكن رفع خط بديل على هذا الجهاز عند الحاجة.',uploadAlternateFont:'رفع خط بديل',restoreBuiltIn:'الرجوع للمدمج',saveSettings:'حفظ الإعدادات',lockApp:'قفل البرنامج (تسجيل الخروج)',quotePreview:'معاينة عرض السعر',footerCredit:'تم تصميم هذا البرنامج لشركة ينابيع الهدى من قبل حسين الطنطاوي',mobileData:'البيانات',mobilePreview:'المعاينة',mobileSaved:'المحفوظات',hotelMethod:'طريقة اختيار الفندق',chooseFromList:'اختيار من القائمة',addNewHotel:'إضافة فندق جديد',hotelFromList:'الفندق من القائمة',selectHotel:'اختر الفندق من القائمة',newHotelName:'اسم الفندق الجديد',writeHotelName:'اكتب اسم الفندق',roomType:'نوع الغرفة',mealPlan:'نوع الوجبة',view:'الإطلالة',pricingMethod:'طريقة التسعير',nightlyMode:'سعر واحد لكل ليلة',weekdayWeekendMode:'WEEKDAY / WEEKEND',totalMode:'سعر كامل للمدة',optionNotes:'ملاحظات الخيار',extraBedPrice:'سعر السرير الإضافي',multiPeriod:'تقسيم الإقامة على أكثر من فترة (تواريخ وأسعار مختلفة)',checkIn:'تاريخ الدخول',checkOut:'تاريخ الخروج',nightlyPrice:'سعر الليلة',weekdayPrice:'سعر WEEKDAY',weekendPrice:'سعر WEEKEND',fullPeriodPrice:'السعر الكامل',deletePeriod:'حذف الفترة',addPeriod:'+ إضافة فترة أخرى',periodCalcHelp:'ستحسب كل فترة بسعرها ثم تجمع تلقائيا.',invalidPeriod:'{period}: يجب أن يكون تاريخ الخروج بعد تاريخ الدخول.',overlapPeriod:'{period} تتداخل مع {previous}.',gapPeriod:'توجد فجوة بين {previous} و{period}.',periodFirst:'الفترة الأولى',periodSecond:'الفترة الثانية',periodThird:'الفترة الثالثة',periodFourth:'الفترة الرابعة',periodFifth:'الفترة الخامسة',periodSixth:'الفترة السادسة',periodSeventh:'الفترة السابعة',periodEighth:'الفترة الثامنة',periodNinth:'الفترة التاسعة',periodTenth:'الفترة العاشرة',periodNumber:'الفترة رقم {n}',rooms:'الغرف',room:'غرفة',total:'إجمالي',bookingDetails:'تفاصيل الحجز',optionNumber:'الخيار {n}',moveUp:'▲ أعلى',moveDown:'▼ أسفل',copyOption:'نسخ الخيار',delete:'حذف',weekday:'WEEKDAY',weekend:'WEEKEND',perRoomTotal:'إجمالي الغرفة الواحدة',optionTotal:'إجمالي هذا الخيار',internalCost:'حساب التكلفة والمكسب',internalOnly:'داخلي فقط',privateCostNote:'🔒 هذه البيانات محفوظة محليا للموظف فقط، ولا تظهر في رسالة واتساب أو المعاينة أو ملف PDF.',currentSaleTotal:'إجمالي البيع الحالي',perRoomTimesRooms:'{amount} للغرفة × {rooms} غرف',priceFromCompany:'السعر من شركة',bestProfit:'أفضل مكسب',deleteCompany:'حذف الشركة',supplierName:'اسم الشركة / المورد',writeCompanyName:'اكتب اسم الشركة',periodCost:'تكلفة {period}',nightCost:'تكلفة الليلة',weekdayCost:'تكلفة WEEKDAY',weekendCost:'تكلفة WEEKEND',fullPeriodCost:'التكلفة الكاملة للفترة',periodRoomCost:'إجمالي تكلفة الفترة للغرفة:',costComplete:'اكتملت أسعار التكلفة لهذه الشركة.',costIncomplete:'أدخل سعر التكلفة لكل فترة ليظهر الربح بدقة.',roomCost:'تكلفة الغرفة الواحدة',totalCost:'إجمالي التكلفة ({rooms} غرف)',netProfit:'صافي المكسب',profitMargin:'نسبة المكسب من البيع',addSupplier:'+ إضافة سعر من شركة أخرى',nightOne:'1 ليلة',nightsMany:'{n} ليال',priceNight:'سعر الليلة: {price} {currency}',priceWeekdays:'وسط الأسبوع: {weekdayPrice} {currency} × {weekdayNights} · ويك إند: {weekendPrice} {currency} × {weekendNights}',priceFull:'السعر الكامل: {price} {currency}',periodsTotal:'إجمالي {count} فترات ({nights})',weekDistribution:'وسط الأسبوع: {weekday} · ويك إند: {weekend}',allOptionsTotal:'الإجمالي الكلي',allOptions:'جميع الخيارات',totalRoomCount:'العدد الإجمالي للغرف:',details:'التفاصيل:',allOptionsAmount:'الإجمالي الكلي لجميع الخيارات',dearCustomer:'عزيزي العميل /',customerPlaceholder:'اسم العميل',quoteForCustomer:'عرض سعر للعميل',proposedStay:'تفاصيل الإقامة والحجز المقترح',date:'التاريخ',stayDetails:'تفاصيل الإقامة',hotelPlaceholder:'اسم الفندق',entry:'الدخول',exit:'الخروج',meal:'الوجبة',nightDistribution:'توزيع الليالي',fromTo:'من {from} إلى {to}',contact:'للتواصل',quoteOption:'الخيار {n}:',hotel:'الفندق:',periodStay:'{period}: من {from} إلى {to} ({nights})',periodPriceLine:'سعر {period}: {price}',totalNights:'إجمالي عدد الليالي:',numberOfRooms:'عدد الغرف:',weekdaySale:'سعر وسط الأسبوع:',weekendSale:'سعر نهاية الأسبوع:',fullStayPrice:'السعر الكامل للمدة:',nightSale:'سعر الليلة:',extraBedSale:'سعر السرير الإضافي:',timesRooms:'× {rooms} غرف',totalAmount:'الإجمالي الكلي:',amount:'الإجمالي:',notesLabel:'ملاحظات:',noSaved:'لا توجد عروض محفوظة بعد.',open:'فتح',copy:'نسخة',createdCopy:'تم إنشاء نسخة',onePage:'1 صفحة',pagesCount:'{count} {unit} ({density})',pageSingular:'صفحة',pagePlural:'صفحات',densitySpacious:'خط كبير (خيار واحد)',densityNormal:'خط قياسي',densityCompact:'خط مدمج',densityDense:'خط مكثف',densityMicro:'خط دقيق'
+    pageTitle:'ينابيع الهدى | عرض سعر للأفراد',appTitle:'عرض سعر للأفراد',authPrompt:'أدخل كلمة المرور لفتح البرنامج',passwordPlaceholder:'كلمة المرور',rememberPassword:'حفظ كلمة المرور دائما على هذا الجهاز',openApp:'فتح البرنامج',newQuote:'عرض جديد',saveQuote:'حفظ العرض',savePdf:'حفظ PDF',print:'طباعة',switchLanguage:'English',clearData:'مسح البيانات',quoteData:'بيانات عرض السعر',customerName:'اسم العميل',quoteDate:'تاريخ العرض',currency:'العملة',introMessage:'رسالة المقدمة',stayOptions:'خيارات الإقامة',addOption:'+ إضافة خيار',grandTotal:'∑ الإجمالي الكلي',grandHelp:'تفعيل هذا الخيار سيضيف ملخص إجمالي لجميع الغرف والسعر في المعاينة ورسالة الواتساب',enable:'تفعيل',grandPreview:'👀 معاينة نص الإجمالي كما سيظهر في رسالة الواتساب:',messagesNotes:'الرسالة والملاحظات',priceNote:'ملاحظة الأسعار',closingMessage:'رسالة الختام',copyWhatsApp:'نسخ رسالة واتساب',savedQuotes:'العروض المحفوظة',backupTitle:'حفظ واستعادة العروض',backupDesc:'يمكنك تنزيل جميع العروض المحفوظة كملف JSON على جهازك، للاحتياط أو للنقل بين الأجهزة. وعند الحاجة يمكنك رفع الملف واستعادة كل العروض دفعة واحدة.',downloadQuotes:'تنزيل العروض',localBackup:'حفظ نسخة احتياطية على الجهاز',restoreQuotes:'استعادة العروض',uploadBackup:'رفع ملف النسخة الاحتياطية',settings:'إعدادات الشركة',companyNameAr:'اسم الشركة بالعربية',companyNameEn:'اسم الشركة بالإنجليزية',companyLineAr:'وصف الخدمة بالعربية',companyLineEn:'وصف الخدمة بالإنجليزية',phones:'أرقام التواصل (افصل بينها بفاصلة)',previewFonts:'خطوط المعاينة وملف PDF',fontsHelp:'الخطوط الأصلية مدمجة داخل المشروع وتعمل تلقائيا في المعاينة وملف PDF. ويمكن رفع خط بديل على هذا الجهاز عند الحاجة.',uploadAlternateFont:'رفع خط بديل',restoreBuiltIn:'الرجوع للمدمج',saveSettings:'حفظ الإعدادات',lockApp:'قفل البرنامج (تسجيل الخروج)',quotePreview:'معاينة عرض السعر',footerCredit:'تم تصميم هذا البرنامج لشركة ينابيع الهدى من قبل حسين الطنطاوي',mobileData:'البيانات',mobilePreview:'المعاينة',mobileSaved:'المحفوظات',hotelMethod:'طريقة اختيار الفندق',chooseFromList:'اختيار من القائمة',addNewHotel:'إضافة فندق جديد',hotelFromList:'الفندق من القائمة',selectHotel:'اختر الفندق من القائمة',newHotelName:'اسم الفندق الجديد',writeHotelName:'اكتب اسم الفندق',roomType:'نوع الغرفة',mealPlan:'نوع الوجبة',view:'الإطلالة',pricingMethod:'طريقة التسعير',nightlyMode:'سعر واحد لكل ليلة',weekdayWeekendMode:'WEEKDAY / WEEKEND',totalMode:'سعر كامل للمدة',optionNotes:'ملاحظات الخيار',extraBedPrice:'سعر السرير الإضافي',multiPeriod:'تقسيم الإقامة على أكثر من فترة (تواريخ وأسعار مختلفة)',checkIn:'تاريخ الدخول',checkOut:'تاريخ الخروج',nightlyPrice:'سعر الليلة',weekdayPrice:'سعر WEEKDAY',weekendPrice:'سعر WEEKEND',fullPeriodPrice:'السعر الكامل',deletePeriod:'حذف الفترة',addPeriod:'+ إضافة فترة أخرى',periodCalcHelp:'ستحسب كل فترة بسعرها ثم تجمع تلقائيا.',invalidPeriod:'{period}: يجب أن يكون تاريخ الخروج بعد تاريخ الدخول.',overlapPeriod:'{period} تتداخل مع {previous}.',gapPeriod:'توجد فجوة بين {previous} و{period}.',periodFirst:'الفترة الأولى',periodSecond:'الفترة الثانية',periodThird:'الفترة الثالثة',periodFourth:'الفترة الرابعة',periodFifth:'الفترة الخامسة',periodSixth:'الفترة السادسة',periodSeventh:'الفترة السابعة',periodEighth:'الفترة الثامنة',periodNinth:'الفترة التاسعة',periodTenth:'الفترة العاشرة',periodNumber:'الفترة رقم {n}',rooms:'الغرف',room:'غرفة',total:'إجمالي',bookingDetails:'تفاصيل الحجز',optionNumber:'الخيار {n}',moveUp:'▲ أعلى',moveDown:'▼ أسفل',copyOption:'نسخ الخيار',delete:'حذف',weekday:'WEEKDAY',weekend:'WEEKEND',perRoomTotal:'إجمالي الغرفة الواحدة',optionTotal:'إجمالي هذا الخيار',internalCost:'حساب التكلفة والمكسب',internalOnly:'داخلي فقط',privateCostNote:'🔒 هذه البيانات محفوظة محليا للموظف فقط، ولا تظهر في رسالة واتساب أو المعاينة أو ملف PDF.',currentSaleTotal:'إجمالي البيع الحالي',perRoomTimesRooms:'{amount} للغرفة × {rooms} غرف',priceFromCompany:'السعر من شركة',bestProfit:'أفضل مكسب',deleteCompany:'حذف الشركة',supplierName:'اسم الشركة / المورد',writeCompanyName:'اكتب اسم الشركة',periodCost:'تكلفة {period}',nightCost:'تكلفة الليلة',weekdayCost:'تكلفة WEEKDAY',weekendCost:'تكلفة WEEKEND',fullPeriodCost:'التكلفة الكاملة للفترة',periodRoomCost:'إجمالي تكلفة الفترة للغرفة:',costComplete:'اكتملت أسعار التكلفة لهذه الشركة.',costIncomplete:'أدخل سعر التكلفة لكل فترة ليظهر الربح بدقة.',roomCost:'تكلفة الغرفة الواحدة',totalCost:'إجمالي التكلفة ({rooms} غرف)',netProfit:'صافي المكسب',profitMargin:'نسبة المكسب من البيع',addSupplier:'+ إضافة سعر من شركة أخرى',nightOne:'1 ليلة',nightsMany:'{n} ليال',priceNight:'سعر الليلة: {price} {currency}',priceWeekdays:'وسط الأسبوع: {weekdayPrice} {currency} × {weekdayNights} · ويك إند: {weekendPrice} {currency} × {weekendNights}',priceFull:'السعر الكامل: {price} {currency}',periodsTotal:'إجمالي {count} فترات ({nights})',weekDistribution:'وسط الأسبوع: {weekday} · ويك إند: {weekend}',allOptionsTotal:'الإجمالي الكلي',allOptions:'جميع الخيارات',totalRoomCount:'العدد الإجمالي للغرف:',details:'التفاصيل:',allOptionsAmount:'الإجمالي الكلي لجميع الخيارات',dearCustomer:'عزيزي العميل /',customerPlaceholder:'اسم العميل',quoteForCustomer:'عرض سعر للعميل',proposedStay:'تفاصيل الإقامة والحجز المقترح',date:'التاريخ',stayDetails:'تفاصيل الإقامة',hotelPlaceholder:'اسم الفندق',entry:'الدخول',exit:'الخروج',meal:'الوجبة',nightDistribution:'توزيع الليالي',fromTo:'من {from} إلى {to}',contact:'للتواصل',quoteOption:'الخيار {n}:',hotel:'الفندق:',periodStay:'{period}: من {from} إلى {to} ({nights})',periodPriceLine:'سعر {period}: {price}',totalNights:'إجمالي عدد الليالي:',numberOfRooms:'عدد الغرف:',weekdaySale:'سعر وسط الأسبوع:',weekendSale:'سعر نهاية الأسبوع:',fullStayPrice:'السعر الكامل للمدة:',nightSale:'سعر الليلة:',extraBedSale:'سعر السرير الإضافي:',timesRooms:'× {rooms} غرف',totalAmount:'الإجمالي الكلي:',amount:'الإجمالي:',notesLabel:'ملاحظات:',noSaved:'لا توجد عروض محفوظة بعد.',open:'فتح',copy:'نسخة',createdCopy:'تم إنشاء نسخة',onePage:'1 صفحة',pagesCount:'{count} {unit} ({density})',pageSingular:'صفحة',pagePlural:'صفحات',densitySpacious:'خط كبير (خيار واحد)',densityNormal:'خط مريح',densityCompact:'خط متوازن',densityDense:'خط مدمج',densityMicro:'خط صغير مقروء',pageLayoutLabel:'عدد الأسعار / الخيارات في الصفحة',layoutAuto:'ذكي — صفحة واحدة إن أمكن',layoutOne:'خيار واحد لكل صفحة',layoutTwo:'خياران في الصفحة',layoutThree:'3 خيارات في الصفحة',layoutFour:'4 خيارات في الصفحة'
   },
   en:{
-    pageTitle:'Yanabea Al Huda | Individual Quotation',appTitle:'Individual Quotation',authPrompt:'Enter the password to open the application',passwordPlaceholder:'Password',rememberPassword:'Remember the password on this device',openApp:'Open Application',newQuote:'New Quotation',saveQuote:'Save Quotation',savePdf:'Save PDF',print:'Print',switchLanguage:'العربية',clearData:'Clear Data',quoteData:'Quotation Details',customerName:'Customer Name',quoteDate:'Quotation Date',currency:'Currency',introMessage:'Introduction',stayOptions:'Accommodation Options',addOption:'+ Add Option',grandTotal:'∑ Grand Total',grandHelp:'Enable this option to add a combined room and price summary to the preview and WhatsApp message.',enable:'Enable',grandPreview:'👀 Preview of the total as it will appear in the WhatsApp message:',messagesNotes:'Message & Notes',priceNote:'Price Note',closingMessage:'Closing Message',copyWhatsApp:'Copy WhatsApp Message',savedQuotes:'Saved Quotations',backupTitle:'Save & Restore Quotations',backupDesc:'Download all saved quotations as a JSON backup or move them between devices. You can upload the file later to restore every quotation.',downloadQuotes:'Download Quotations',localBackup:'Save a local backup file',restoreQuotes:'Restore Quotations',uploadBackup:'Upload the backup file',settings:'Company Settings',companyNameAr:'Company Name in Arabic',companyNameEn:'Company Name in English',companyLineAr:'Service Tagline in Arabic',companyLineEn:'Service Tagline in English',phones:'Contact Numbers (separate with commas)',previewFonts:'Preview & PDF Fonts',fontsHelp:'The original fonts are bundled with the application and work automatically in the preview and PDF. You can upload an alternate font on this device if needed.',uploadAlternateFont:'Upload Alternate Font',restoreBuiltIn:'Use Built-in Font',saveSettings:'Save Settings',lockApp:'Lock Application (Sign Out)',quotePreview:'Quotation Preview',footerCredit:'This application was designed for Yanabea Al Huda by Hussein Al Tantawy',mobileData:'Data',mobilePreview:'Preview',mobileSaved:'Saved',hotelMethod:'Hotel Selection Method',chooseFromList:'Choose from List',addNewHotel:'Add a New Hotel',hotelFromList:'Hotel from List',selectHotel:'Select a hotel',newHotelName:'New Hotel Name',writeHotelName:'Enter the hotel name',roomType:'Room Type',mealPlan:'Meal Plan',view:'View',pricingMethod:'Pricing Method',nightlyMode:'One Rate per Night',weekdayWeekendMode:'WEEKDAY / WEEKEND',totalMode:'Total Price for the Period',optionNotes:'Option Notes',extraBedPrice:'Extra Bed Rate',multiPeriod:'Split the stay into multiple periods (different dates and rates)',checkIn:'Check-in Date',checkOut:'Check-out Date',nightlyPrice:'Nightly Rate',weekdayPrice:'WEEKDAY Rate',weekendPrice:'WEEKEND Rate',fullPeriodPrice:'Total Period Price',deletePeriod:'Delete Period',addPeriod:'+ Add Another Period',periodCalcHelp:'Each period is calculated at its own rate and then added automatically.',invalidPeriod:'{period}: the check-out date must be after the check-in date.',overlapPeriod:'{period} overlaps with {previous}.',gapPeriod:'There is a gap between {previous} and {period}.',periodFirst:'First Period',periodSecond:'Second Period',periodThird:'Third Period',periodFourth:'Fourth Period',periodFifth:'Fifth Period',periodSixth:'Sixth Period',periodSeventh:'Seventh Period',periodEighth:'Eighth Period',periodNinth:'Ninth Period',periodTenth:'Tenth Period',periodNumber:'Period {n}',rooms:'Rooms',room:'Room',total:'Total',bookingDetails:'Booking Details',optionNumber:'Option {n}',moveUp:'▲ Up',moveDown:'▼ Down',copyOption:'Duplicate Option',delete:'Delete',weekday:'WEEKDAY',weekend:'WEEKEND',perRoomTotal:'Total per Room',optionTotal:'Option Total',internalCost:'Cost & Profit Calculator',internalOnly:'Internal Only',privateCostNote:'🔒 This information is stored locally for employees only and never appears in WhatsApp messages, the customer preview, or PDF files.',currentSaleTotal:'Current Sale Total',perRoomTimesRooms:'{amount} per room × {rooms} rooms',priceFromCompany:'Rate from Company',bestProfit:'Best Profit',deleteCompany:'Delete Company',supplierName:'Company / Supplier Name',writeCompanyName:'Enter company name',periodCost:'{period} Cost',nightCost:'Nightly Cost',weekdayCost:'WEEKDAY Cost',weekendCost:'WEEKEND Cost',fullPeriodCost:'Total Cost for Period',periodRoomCost:'Period cost per room:',costComplete:'All cost rates for this company are complete.',costIncomplete:'Enter the cost rate for every period to calculate profit accurately.',roomCost:'Cost per Room',totalCost:'Total Cost ({rooms} rooms)',netProfit:'Net Profit',profitMargin:'Profit Margin on Sale',addSupplier:'+ Add Rate from Another Company',nightOne:'1 night',nightsMany:'{n} nights',priceNight:'Nightly rate: {price} {currency}',priceWeekdays:'WEEKDAY: {weekdayPrice} {currency} × {weekdayNights} · WEEKEND: {weekendPrice} {currency} × {weekendNights}',priceFull:'Total price: {price} {currency}',periodsTotal:'Total for {count} periods ({nights})',weekDistribution:'WEEKDAY: {weekday} · WEEKEND: {weekend}',allOptionsTotal:'Grand Total',allOptions:'All Options',totalRoomCount:'Total number of rooms:',details:'Breakdown:',allOptionsAmount:'Grand total for all options',dearCustomer:'Dear Customer /',customerPlaceholder:'Customer Name',quoteForCustomer:'Customer Quotation',proposedStay:'Proposed accommodation and booking details',date:'Date',stayDetails:'Accommodation Details',hotelPlaceholder:'Hotel Name',entry:'Check-in',exit:'Check-out',meal:'Meal Plan',nightDistribution:'Night Distribution',fromTo:'From {from} to {to}',contact:'Contact',quoteOption:'Option {n}:',hotel:'Hotel:',periodStay:'{period}: from {from} to {to} ({nights})',periodPriceLine:'{period} rate: {price}',totalNights:'Total nights:',numberOfRooms:'Number of rooms:',weekdaySale:'WEEKDAY rate:',weekendSale:'WEEKEND rate:',fullStayPrice:'Total price for the stay:',nightSale:'Nightly rate:',extraBedSale:'Extra bed rate:',timesRooms:'× {rooms} rooms',totalAmount:'Grand total:',amount:'Total:',notesLabel:'Notes:',noSaved:'No saved quotations yet.',open:'Open',copy:'Duplicate',createdCopy:'A duplicate was created',onePage:'1 page',pagesCount:'{count} {unit} ({density})',pageSingular:'page',pagePlural:'pages',densitySpacious:'Large text (one option)',densityNormal:'Standard text',densityCompact:'Compact text',densityDense:'Condensed text',densityMicro:'Fine text'
+    pageTitle:'Yanabea Al Huda | Individual Quotation',appTitle:'Individual Quotation',authPrompt:'Enter the password to open the application',passwordPlaceholder:'Password',rememberPassword:'Remember the password on this device',openApp:'Open Application',newQuote:'New Quotation',saveQuote:'Save Quotation',savePdf:'Save PDF',print:'Print',switchLanguage:'العربية',clearData:'Clear Data',quoteData:'Quotation Details',customerName:'Customer Name',quoteDate:'Quotation Date',currency:'Currency',introMessage:'Introduction',stayOptions:'Accommodation Options',addOption:'+ Add Option',grandTotal:'∑ Grand Total',grandHelp:'Enable this option to add a combined room and price summary to the preview and WhatsApp message.',enable:'Enable',grandPreview:'👀 Preview of the total as it will appear in the WhatsApp message:',messagesNotes:'Message & Notes',priceNote:'Price Note',closingMessage:'Closing Message',copyWhatsApp:'Copy WhatsApp Message',savedQuotes:'Saved Quotations',backupTitle:'Save & Restore Quotations',backupDesc:'Download all saved quotations as a JSON backup or move them between devices. You can upload the file later to restore every quotation.',downloadQuotes:'Download Quotations',localBackup:'Save a local backup file',restoreQuotes:'Restore Quotations',uploadBackup:'Upload the backup file',settings:'Company Settings',companyNameAr:'Company Name in Arabic',companyNameEn:'Company Name in English',companyLineAr:'Service Tagline in Arabic',companyLineEn:'Service Tagline in English',phones:'Contact Numbers (separate with commas)',previewFonts:'Preview & PDF Fonts',fontsHelp:'The original fonts are bundled with the application and work automatically in the preview and PDF. You can upload an alternate font on this device if needed.',uploadAlternateFont:'Upload Alternate Font',restoreBuiltIn:'Use Built-in Font',saveSettings:'Save Settings',lockApp:'Lock Application (Sign Out)',quotePreview:'Quotation Preview',footerCredit:'This application was designed for Yanabea Al Huda by Hussein Al Tantawy',mobileData:'Data',mobilePreview:'Preview',mobileSaved:'Saved',hotelMethod:'Hotel Selection Method',chooseFromList:'Choose from List',addNewHotel:'Add a New Hotel',hotelFromList:'Hotel from List',selectHotel:'Select a hotel',newHotelName:'New Hotel Name',writeHotelName:'Enter the hotel name',roomType:'Room Type',mealPlan:'Meal Plan',view:'View',pricingMethod:'Pricing Method',nightlyMode:'One Rate per Night',weekdayWeekendMode:'WEEKDAY / WEEKEND',totalMode:'Total Price for the Period',optionNotes:'Option Notes',extraBedPrice:'Extra Bed Rate',multiPeriod:'Split the stay into multiple periods (different dates and rates)',checkIn:'Check-in Date',checkOut:'Check-out Date',nightlyPrice:'Nightly Rate',weekdayPrice:'WEEKDAY Rate',weekendPrice:'WEEKEND Rate',fullPeriodPrice:'Total Period Price',deletePeriod:'Delete Period',addPeriod:'+ Add Another Period',periodCalcHelp:'Each period is calculated at its own rate and then added automatically.',invalidPeriod:'{period}: the check-out date must be after the check-in date.',overlapPeriod:'{period} overlaps with {previous}.',gapPeriod:'There is a gap between {previous} and {period}.',periodFirst:'First Period',periodSecond:'Second Period',periodThird:'Third Period',periodFourth:'Fourth Period',periodFifth:'Fifth Period',periodSixth:'Sixth Period',periodSeventh:'Seventh Period',periodEighth:'Eighth Period',periodNinth:'Ninth Period',periodTenth:'Tenth Period',periodNumber:'Period {n}',rooms:'Rooms',room:'Room',total:'Total',bookingDetails:'Booking Details',optionNumber:'Option {n}',moveUp:'▲ Up',moveDown:'▼ Down',copyOption:'Duplicate Option',delete:'Delete',weekday:'WEEKDAY',weekend:'WEEKEND',perRoomTotal:'Total per Room',optionTotal:'Option Total',internalCost:'Cost & Profit Calculator',internalOnly:'Internal Only',privateCostNote:'🔒 This information is stored locally for employees only and never appears in WhatsApp messages, the customer preview, or PDF files.',currentSaleTotal:'Current Sale Total',perRoomTimesRooms:'{amount} per room × {rooms} rooms',priceFromCompany:'Rate from Company',bestProfit:'Best Profit',deleteCompany:'Delete Company',supplierName:'Company / Supplier Name',writeCompanyName:'Enter company name',periodCost:'{period} Cost',nightCost:'Nightly Cost',weekdayCost:'WEEKDAY Cost',weekendCost:'WEEKEND Cost',fullPeriodCost:'Total Cost for Period',periodRoomCost:'Period cost per room:',costComplete:'All cost rates for this company are complete.',costIncomplete:'Enter the cost rate for every period to calculate profit accurately.',roomCost:'Cost per Room',totalCost:'Total Cost ({rooms} rooms)',netProfit:'Net Profit',profitMargin:'Profit Margin on Sale',addSupplier:'+ Add Rate from Another Company',nightOne:'1 night',nightsMany:'{n} nights',priceNight:'Nightly rate: {price} {currency}',priceWeekdays:'WEEKDAY: {weekdayPrice} {currency} × {weekdayNights} · WEEKEND: {weekendPrice} {currency} × {weekendNights}',priceFull:'Total price: {price} {currency}',periodsTotal:'Total for {count} periods ({nights})',weekDistribution:'WEEKDAY: {weekday} · WEEKEND: {weekend}',allOptionsTotal:'Grand Total',allOptions:'All Options',totalRoomCount:'Total number of rooms:',details:'Breakdown:',allOptionsAmount:'Grand total for all options',dearCustomer:'Dear Customer /',customerPlaceholder:'Customer Name',quoteForCustomer:'Customer Quotation',proposedStay:'Proposed accommodation and booking details',date:'Date',stayDetails:'Accommodation Details',hotelPlaceholder:'Hotel Name',entry:'Check-in',exit:'Check-out',meal:'Meal Plan',nightDistribution:'Night Distribution',fromTo:'From {from} to {to}',contact:'Contact',quoteOption:'Option {n}:',hotel:'Hotel:',periodStay:'{period}: from {from} to {to} ({nights})',periodPriceLine:'{period} rate: {price}',totalNights:'Total nights:',numberOfRooms:'Number of rooms:',weekdaySale:'WEEKDAY rate:',weekendSale:'WEEKEND rate:',fullStayPrice:'Total price for the stay:',nightSale:'Nightly rate:',extraBedSale:'Extra bed rate:',timesRooms:'× {rooms} rooms',totalAmount:'Grand total:',amount:'Total:',notesLabel:'Notes:',noSaved:'No saved quotations yet.',open:'Open',copy:'Duplicate',createdCopy:'A duplicate was created',onePage:'1 page',pagesCount:'{count} {unit} ({density})',pageSingular:'page',pagePlural:'pages',densitySpacious:'Large text (one option)',densityNormal:'Comfortable text',densityCompact:'Balanced text',densityDense:'Compact text',densityMicro:'Small readable text',pageLayoutLabel:'Rates / options per page',layoutAuto:'Smart — one page when possible',layoutOne:'1 option per page',layoutTwo:'2 options per page',layoutThree:'3 options per page',layoutFour:'4 options per page'
   }
 };
 
@@ -238,7 +238,7 @@ function defaultOffer(){
 }
 function defaultData(){
   return {
-    draft:{customerName:'',quoteDate:today(),intro:'نسعد بإبلاغك بتفاصيل الحجز كالتالي:',currency:'ريال سعودي',notes:'الأسعار قابلة للتغيير حسب الإمكانية وقت التأكيد.',closing:'يسعدنا خدمتك، ولتأكيد الحجز يرجى التواصل معنا وإرسال بيانات النزلاء.',items:[defaultOffer()],showGrandTotal:false},
+    draft:{customerName:'',quoteDate:today(),intro:'نسعد بإبلاغك بتفاصيل الحجز كالتالي:',currency:'ريال سعودي',notes:'الأسعار قابلة للتغيير حسب الإمكانية وقت التأكيد.',closing:'يسعدنا خدمتك، ولتأكيد الحجز يرجى التواصل معنا وإرسال بيانات النزلاء.',items:[defaultOffer()],showGrandTotal:false,pageLayout:'auto'},
     library:[],
     settings:{language:'ar',companyName:'ينابيع الهدى المتميزة',companyNameEn:'Yanabea Al Huda Travel & Tourism',companyLine:'سكن مطمئن لرحلة مباركة',companyLineEn:'Peaceful Stay... for a Blessed Journey',phones:PHONE_DEFAULT.join('، '),logo:ORIGINAL_LOGO,pdfFonts:{}},
     activeId:''
@@ -368,6 +368,7 @@ function normalize(){
   });
   if(!app.settings.companyLine||app.settings.companyLine==='خدمات الفنادق والحجوزات')app.settings.companyLine='سكن مطمئن لرحلة مباركة';
   app.settings.phones=normalizePhones(app.settings.phones||PHONE_DEFAULT.join('، '));
+  app.draft.pageLayout=['auto','1','2','3','4'].includes(String(app.draft.pageLayout||''))?String(app.draft.pageLayout):'auto';
   app.draft.items=Array.isArray(app.draft.items)&&app.draft.items.length?app.draft.items.slice(0,MAX_OFFERS):[defaultOffer()];
   const offerIds=new Set();
   app.draft.items=app.draft.items.map(x=>{
@@ -1654,13 +1655,12 @@ function outerHeight(el){
   return el.getBoundingClientRect().height+(parseFloat(style.marginTop)||0)+(parseFloat(style.marginBottom)||0);
 }
 
-const DENSITY_MODES=['spacious','normal','compact','dense','micro'];
+const DENSITY_MODES=['normal','compact','dense','micro'];
 
 function getInitialDensity(count){
-  if(count<=1)return'spacious';
-  if(count===2)return'normal';
-  if(count===3)return'compact';
-  if(count<=5)return'dense';
+  if(count<=1)return'normal';
+  if(count===2)return'compact';
+  if(count<=4)return'dense';
   return'micro';
 }
 
@@ -1691,7 +1691,7 @@ function measurePreviewLayout(q,sets,density){
   const footer=probe.querySelector('.quote-footer');
   const bodyStyle=getComputedStyle(body);
   const pageHeight=page.getBoundingClientRect().height||1123;
-  const bottomReserve=Math.max(parseFloat(bodyStyle.paddingBottom)||0,(footer?.getBoundingClientRect().height||0)+20);
+  const bottomReserve=Math.max(parseFloat(bodyStyle.paddingBottom)||0,(footer?.getBoundingClientRect().height||0)+16);
   const contentLimit=Math.max(100,pageHeight-header.getBoundingClientRect().height-(parseFloat(bodyStyle.paddingTop)||0)-bottomReserve-4);
   const greetingHeight=outerHeight(probe.querySelector('.greeting'));
   const offerHeights=[...probe.querySelectorAll('.preview-offer')].map(outerHeight);
@@ -1700,64 +1700,70 @@ function measurePreviewLayout(q,sets,density){
   return{contentLimit,greetingHeight,offerHeights,closingHeight};
 }
 
-function doPaginateWithDensity(q,sets,density){
+function doPaginateWithDensity(q,sets,density,maxItemsPerPage=Infinity){
   const measured=measurePreviewLayout(q,sets,density);
+  const entries=(q.items||[]).map((offer,index)=>({offer,index}));
   const pages=[];
-  const heights=[];
-  const newPage=()=>{pages.push([]);heights.push(measured.greetingHeight)};
-  newPage();
+  let current=[];
+  let currentHeight=measured.greetingHeight; // Greeting is shown only on page 1.
 
-  q.items.forEach((offer,index)=>{
-    const offerHeight=measured.offerHeights[index]||0;
-    let pageIndex=pages.length-1;
-    if(pages[pageIndex].length&&heights[pageIndex]+offerHeight>measured.contentLimit){
-      newPage();
-      pageIndex=pages.length-1;
+  entries.forEach((entry,pos)=>{
+    const offerHeight=measured.offerHeights[entry.index]||0;
+    const isLastOffer=pos===entries.length-1;
+    const closingReserve=isLastOffer?measured.closingHeight:0;
+    const reachedCountLimit=current.length>=maxItemsPerPage;
+    const exceedsHeight=current.length>0 && currentHeight+offerHeight+closingReserve>measured.contentLimit;
+
+    if(reachedCountLimit||exceedsHeight){
+      pages.push(current);
+      current=[];
+      currentHeight=0;
     }
-    pages[pageIndex].push({offer,index});
-    heights[pageIndex]+=offerHeight;
+
+    current.push(entry);
+    currentHeight+=offerHeight;
+
+    // If the last offer plus closing text cannot fit with other offers on this page,
+    // move the last offer to a fresh page instead of shrinking everything unnecessarily.
+    if(isLastOffer && current.length>1 && currentHeight+measured.closingHeight>measured.contentLimit){
+      const last=current.pop();
+      pages.push(current);
+      current=[last];
+      currentHeight=offerHeight;
+    }
   });
 
-  let last=pages.length-1;
-  if(heights[last]+measured.closingHeight>measured.contentLimit){
-    const tail=[];
-    let tailHeight=measured.greetingHeight+measured.closingHeight;
-    while(pages[last].length){
-      const candidate=pages[last][pages[last].length-1];
-      const candidateHeight=measured.offerHeights[candidate.index]||0;
-      if(tailHeight+candidateHeight>measured.contentLimit)break;
-      pages[last].pop();
-      heights[last]-=candidateHeight;
-      tail.unshift(candidate);
-      tailHeight+=candidateHeight;
-    }
-    if(tail.length){
-      if(!pages[last].length){pages.pop();heights.pop()}
-      pages.push(tail);
-      heights.push(tailHeight-measured.closingHeight);
-    }else{
-      pages.push([]);
-      heights.push(measured.greetingHeight);
-    }
-  }
+  if(current.length||!pages.length)pages.push(current);
   return pages;
 }
 
 function paginatePreviewItems(q,sets){
-  const count=(q.items||[]).length;
-  const initialDensity=getInitialDensity(count);
-  const startIdx=DENSITY_MODES.indexOf(initialDensity);
+  const count=Math.max(1,(q.items||[]).length);
+  const layout=String(q.pageLayout||'auto');
+  const requestedPerPage=layout==='auto'?count:Math.max(1,Math.min(4,Number(layout)||1));
+  const expectedPages=Math.ceil(count/requestedPerPage);
+  const trials=DENSITY_MODES.map(density=>({
+    density,
+    chunks:doPaginateWithDensity(q,sets,density,requestedPerPage)
+  }));
 
-  let chosenPages=[];
-  let chosenDensity=initialDensity;
+  if(layout==='auto'){
+    // Prefer one clean A4 page. Only reduce the density as much as needed.
+    const onePage=trials.find(t=>t.chunks.length===1);
+    if(onePage)return onePage;
 
-  for(let i=startIdx;i<DENSITY_MODES.length;i++){
-    chosenDensity=DENSITY_MODES[i];
-    chosenPages=doPaginateWithDensity(q,sets,chosenDensity);
-    if(chosenPages.length<=2)break; // Always fit within max 2 pages!
+    // If one page is genuinely too crowded, use the fewest pages possible while
+    // keeping the largest readable density among equally good results.
+    const minPages=Math.min(...trials.map(t=>t.chunks.length));
+    return trials.find(t=>t.chunks.length===minPages)||trials[trials.length-1];
   }
 
-  return{chunks:chosenPages,density:chosenDensity};
+  // Manual layout means "up to N options per page". Pick the largest density that
+  // still respects the requested page count; fall back gracefully for unusually tall offers.
+  const exact=trials.find(t=>t.chunks.length===expectedPages);
+  if(exact)return exact;
+  const minPages=Math.min(...trials.map(t=>t.chunks.length));
+  return trials.find(t=>t.chunks.length===minPages)||trials[trials.length-1];
 }
 
 function renderPreview(){
@@ -1776,7 +1782,7 @@ function renderPreview(){
         <div class="quote-date"><b>${tr('date')}</b><br>${dateLabel(q.quoteDate)}</div>
       </header>
       <main class="quote-body">
-        ${previewGreetingHtml(q)}
+        ${pageIndex===0?previewGreetingHtml(q):''}
         ${items}
         ${finalBlock}
       </main>
@@ -1790,6 +1796,9 @@ function renderPreview(){
 
   const pagesContainer = document.getElementById('quotePages');
   if(pagesContainer) pagesContainer.innerHTML=pages;
+
+  const pageLayoutMode=document.getElementById('pageLayoutMode');
+  if(pageLayoutMode&&pageLayoutMode.value!==String(q.pageLayout||'auto'))pageLayoutMode.value=String(q.pageLayout||'auto');
 
   const densityBadge=document.getElementById('densityBadge');
   if(densityBadge){
@@ -2176,6 +2185,12 @@ function applyStaticLanguage(){
   document.querySelectorAll('#settingsPanel [data-reset-font]').forEach(button=>button.textContent=tr('restoreBuiltIn'));
 
   setElementText('#previewColumn .preview-tools h3',tr('quotePreview'));
+  setElementText('#pageLayoutLabel',tr('pageLayoutLabel'));
+  const pageLayoutMode=document.getElementById('pageLayoutMode');
+  if(pageLayoutMode){
+    const labels={auto:tr('layoutAuto'),'1':tr('layoutOne'),'2':tr('layoutTwo'),'3':tr('layoutThree'),'4':tr('layoutFour')};
+    [...pageLayoutMode.options].forEach(option=>{if(labels[option.value])option.textContent=labels[option.value]});
+  }
   setElementText('.footer-tagline',`${companyDisplayName()}... ${companyDisplayLine()}`);
   setElementText('.footer-credits',tr('footerCredit'));
   document.querySelectorAll('[data-mobile-tab="editor"]').forEach(el=>el.textContent=tr('mobileData'));
@@ -2257,6 +2272,16 @@ function init(){
     renderPreview();
     renderGrandTotalPreview();
   });
+
+  const pageLayoutMode=document.getElementById('pageLayoutMode');
+  if(pageLayoutMode){
+    pageLayoutMode.value=String(app.draft.pageLayout||'auto');
+    pageLayoutMode.addEventListener('change',()=>{
+      app.draft.pageLayout=['auto','1','2','3','4'].includes(pageLayoutMode.value)?pageLayoutMode.value:'auto';
+      persist();
+      renderPreview();
+    });
+  }
 
   ['saveQuote','saveQuoteTop'].forEach(id=>{
     const btn=document.getElementById(id);

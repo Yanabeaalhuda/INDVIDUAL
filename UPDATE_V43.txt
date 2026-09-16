@@ -1,0 +1,21 @@
+UPDATE V43 - Smart one-page quotation layout
+Date: 2026-09-16
+
+Changes:
+1. Smart PDF/page layout now tries to keep all quotation options on one A4 page first, using the largest readable density that fits.
+2. Removed the old behavior that stopped optimizing as soon as the result was 2 pages.
+3. Reduced oversized headers, cards, spacing, and typography while keeping text readable.
+4. Greeting is shown only on the first page; the closing block stays on the final page.
+5. Added a new preview/PDF control: "Number of rates/options per page" with:
+   - Smart - one page when possible
+   - 1 option per page
+   - 2 options per page
+   - 3 options per page
+   - 4 options per page
+6. The selected page layout is saved with the quotation and restored when the saved quotation is reopened.
+7. Added matching Arabic/English labels for the new layout control.
+8. Added compact handling for multi-period rows so they do not force extra pages unnecessarily.
+
+Files changed:
+- index.html
+- app.js
