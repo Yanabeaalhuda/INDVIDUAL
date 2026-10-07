@@ -667,17 +667,35 @@ function duplicateOffer(id){
   if(sourceIndex<0){toast(tr('offerNotFound'));return}
   const copy=clone(app.draft.items[sourceIndex]);
   copy.id=uid();
+  copy.hotelId='';
+  copy.hotelName='';
+  copy.hotelMode='list';
   const periodIdMap=new Map();
   copy.periods=(copy.periods||[]).map(period=>{
     const oldId=period.id;
     const newId=uid();
     periodIdMap.set(oldId,newId);
-    return{...period,id:newId};
+    return{
+      ...period,
+      id:newId,
+      nightlyPrice:'',
+      weekdayPrice:'',
+      weekendPrice:'',
+      totalPrice:''
+    };
   });
+  copy.extraBed='';
   copy.supplierQuotes=(copy.supplierQuotes||[]).map(quote=>({
     ...quote,
     id:uid(),
-    periods:(quote.periods||[]).map(period=>({...period,periodId:periodIdMap.get(period.periodId)||period.periodId}))
+    periods:(quote.periods||[]).map(period=>({
+      ...period,
+      periodId:periodIdMap.get(period.periodId)||period.periodId,
+      nightlyPrice:'',
+      weekdayPrice:'',
+      weekendPrice:'',
+      totalPrice:''
+    }))
   }));
   app.draft.items.splice(sourceIndex+1,0,copy);
   persist();
@@ -853,32 +871,11 @@ function applyHotel(offer,hotelId=''){
 }
 
 function applyRateToPeriod(offer,period,updateMode=true){
-  const r=matchingRate(offer,period?.checkIn),p=ratePrices(r);
-  if(!r)return false;
-  period.weekdayPrice=p.weekday||'';
-  period.weekendPrice=p.weekend||p.weekday||'';
-  period.nightlyPrice=p.weekday||p.weekend||'';
-  offer.extraBed=String(r.extraBed??'');
-  offer.view=inferView(offer.roomType)||offer.view;
-  if(updateMode&&p.weekday&&p.weekend&&num(p.weekday)!==num(p.weekend)){
-    offer.pricingMode='weekdayWeekend';
-  }else if(updateMode&&offer.pricingMode!=='weekdayWeekend'&&p.weekday){
-    offer.pricingMode='nightly';
-  }
-  return true;
+  return false;
 }
 
 function applyRate(offer){
-  let applied=false,hasDifferentRates=false;
-  (offer.periods||[]).forEach(period=>{
-    const r=matchingRate(offer,period.checkIn),prices=ratePrices(r);
-    if(!r)return;
-    applied=true;
-    if(prices.weekday&&prices.weekend&&num(prices.weekday)!==num(prices.weekend))hasDifferentRates=true;
-    applyRateToPeriod(offer,period,false);
-  });
-  if(applied)offer.pricingMode=hasDifferentRates?'weekdayWeekend':'nightly';
-  return applied;
+  return false;
 }
 
 function calculatePeriodStats(checkIn, checkOut, pricingMode, priceObj) {
@@ -1215,7 +1212,6 @@ function setupHotelAutocomplete(card,o,refresh){
     const hotel=HOTELS.find(h=>h.id===id);
     if(!hotel)return;
     applyHotel(o,hotel.id);
-    applyRate(o);
     toast(tr('hotelSelected'));
     close();
     refresh();
@@ -1411,7 +1407,6 @@ function renderOffers(){
       });
       el.addEventListener('change',()=>{
         o[key]=el.value;
-        if(key==='roomType')applyRate(o);
         if(['pricingMode','roomType','roomCount'].includes(key))refresh();
         else commitClientFields();
       });
@@ -1425,7 +1420,6 @@ function renderOffers(){
       });
       el.addEventListener('change',()=>{
         o[key]=canonicalLocalizedValue(key,el.value.trim());
-        if(key==='roomType')applyRate(o);
         refresh();
       });
     });
@@ -1451,7 +1445,6 @@ function renderOffers(){
       el.addEventListener('change',()=>{
         period[key]=el.value;
         if(key==='checkIn'&&period.checkOut&&period.checkOut<=period.checkIn)period.checkOut=addDaysISO(period.checkIn,1);
-        if(key==='checkIn')applyRateToPeriod(o,period,true);
         refresh();
       });
     });
@@ -1461,7 +1454,6 @@ function renderOffers(){
       const period=nextPeriodAfter(o.periods[o.periods.length-1]);
       o.periods.push(period);
       o.hasMultiplePeriods=true;
-      applyRateToPeriod(o,period,true);
       syncSupplierCostPeriods(o);
       refresh();
       toast(tr('periodAdded',{period:periodLabel(o.periods.length-1)}));
